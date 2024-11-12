@@ -5,7 +5,7 @@
 Group member names and ccids (3-4 members)  
   omahmoud, Omar Mahmoud  
   ymoussa, Yousef Moussa
-  ccid3, name2  
+  nqadri, nasif qadri
 
 # Group work break-down strategy
 Please add
