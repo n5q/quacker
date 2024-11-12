@@ -4,7 +4,7 @@
 # CMPUT 291 Mini Project 1 -Fall 2024
 Group member names and ccids (3-4 members)  
   omahmoud, Omar Mahmoud  
-  ymoussa, Yousef Moussa
+  ymoussa, Yousef Moussa  
   nqadri, nasif qadri
 
 # Group work break-down strategy
