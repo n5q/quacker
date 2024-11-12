@@ -26,6 +26,12 @@ void Quacker::startPage() {
       case '1':
         loginPage();
         break;
+      case '2':
+        signupPage();
+        break;
+      case '3':
+        exit(0);
+        break;
 
       default:
         break;
