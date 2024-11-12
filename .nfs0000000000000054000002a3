@@ -1,0 +1,72 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS users (
+  usr TEXT NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  phone INT UNIQUE NOT NULL,
+  pwd TEXT NOT NULL,
+
+  PRIMARY KEY (usr)
+);
+
+CREATE TABLE IF NOT EXISTS follows (
+  flwer INT NOT NULL,
+  flwee INT NOT NULL,
+  start_date DATE NOT NULL,
+
+  FOREIGN KEY (flwer) REFERENCES users ON DELETE CASCADE,
+  FOREIGN KEY (flwee) REFERENCES users ON DELETE CASCADE,
+  PRIMARY KEY (flwer, flwee)
+);
+
+CREATE TABLE IF NOT EXISTS lists (
+  owner_id TEXT,
+  lname TEXT,
+
+  FOREIGN KEY (owner_id) REFERENCES users ON DELETE CASCADE,
+  PRIMARY KEY (owner_id, lname)
+);
+
+CREATE TABLE IF NOT EXISTS include (
+  owner_id TEXT,
+  lname TEXT,
+  tid INT,
+
+  FOREIGN KEY (owner_id, lname) REFERENCES lists ON DELETE CASCADE,
+  FOREIGN KEY (tid) REFERENCES tweets ON DELETE CASCADE,
+  PRIMARY KEY (owner_id, lname, tid)
+);
+
+CREATE TABLE IF NOT EXISTS tweets (
+  tid INT,
+  writer_id TEXT NOT NULL,
+  text TEXT NOT NULL,
+  tdate DATE NOT NULL,
+  ttime TIME NOT NULL,
+  replyto_tid INT,
+
+  FOREIGN KEY (writer_id) REFERENCES users ON DELETE CASCADE,
+  FOREIGN KEY (replyto_tid) REFERENCES tweets ON DELETE SET NULL,
+  PRIMARY KEY (tid)
+);
+
+CREATE TABLE IF NOT EXISTS retweets (
+  tid INT,
+  retweeter_id TEXT,
+  writer_id TEXT,
+  spam BOOLEAN NOT NULL,
+  rdate DATE NOT NULL,
+
+  FOREIGN KEY (tid) REFERENCES tweets ON DELETE CASCADE,
+  FOREIGN KEY (retweeter_id) REFERENCES users ON DELETE CASCADE,
+  FOREIGN KEY (writer_id) REFERENCES users ON DELETE CASCADE,
+  PRIMARY KEY (tid, retweeter_id)
+);
+
+CREATE TABLE IF NOT EXISTS hashtag_mentions (
+    tid INT,
+    term TEXT NOT NULL,
+    FOREIGN KEY (tid) REFERENCES tweets ON DELETE CASCADE,
+    PRIMARY KEY (tid, term)
+);
