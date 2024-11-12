@@ -1,6 +1,10 @@
-#include "Quacker.hpp"
+#include "Quacker.hh"
 
-Quacker::Quacker() {
+Quacker::Quacker(const std::string& db_filename) {
+  if (pond.loadDatabase(db_filename)) {
+    std::cerr << "Database Error: Could Not Open" << db_filename << std::endl;
+    exit(-3);
+  }
 }
 
 Quacker::~Quacker() {
@@ -33,15 +37,16 @@ void Quacker::loginPage() {
   while (this->_user_id.empty()) {
     std::system("clear");
 
-    std::string user_id;
+    uint32_t user_id;
     std::string password;
     
     std::cout << QUACKER_BANNER << "\n--- Log In ---\nUser ID: ";
-    std::cin >> user_id;
+    std::cin >> user_id; // <<< FIX THIS BRU
 
     std::cout << "Password: ";
     std::cin >> password;
-    /*CHECK FOR VALIDITY*/
+
+    /*** CHECK FOR VALIDITY ***/
   }
 }
 
@@ -54,5 +59,7 @@ void Quacker::signupPage() {
     std::string email;
     std::string phone;
     std::string password;
+
+
   }
 }
