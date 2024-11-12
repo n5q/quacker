@@ -68,7 +68,13 @@ public:
     const uint32_t& reply_tweet_id,
     const std::string& text
   );
-  
+
+  bool retweet(
+    const std::uint32_t& user_id,
+    const uint32_t& retweet_tweet_id,
+    const std::string& text
+  );
+
   // bool addToList(
   //   const std::string& list_id,
   //   const uint32_t& tweet_id
@@ -101,10 +107,13 @@ public:
     const std::uint32_t& follow_id
   );
 
-  // std::vector<std::string> searchForTweets(
-  //   const std::string& keywords,
-  //   const std::uint32_t& user_id
-  // );
+  std::vector<std::string> searchForTweets(
+    const std::string& keywords,
+  );
+
+  std::vector<std::string> searchForUsers(
+    const std::string& keywords,
+  );
 
   // std::vector<std::pair<std::string, std::string>> searchForUsers(
   //   const std::string& keyword
