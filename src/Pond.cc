@@ -133,7 +133,7 @@ bool Pond::addReply(const uint32_t& user_id, const uint32_t& reply_tweet_id, con
 
   // Bind parameters to prevent SQL injection
   sqlite3_bind_int(stmt,  1, new_tid);                               // tid;
-  sqlite3_bind_int(stmt, 2, user_id);                                // writer_id
+  sqlite3_bind_int(stmt,  2, user_id);                               // writer_id
   sqlite3_bind_text(stmt, 3, text.c_str(), -1, SQLITE_STATIC);       // text
   sqlite3_bind_text(stmt, 4, this->_getDate(), -1, SQLITE_STATIC);   // tdate
   sqlite3_bind_text(stmt, 5, this->_getDate(), -1, SQLITE_STATIC);   // ttime
@@ -185,6 +185,88 @@ bool Pond::checkLogin(const uint32_t& user_id, const std::string& password) {
 }
 
 /**
+ * @brief Adds a follow relationship between two users.
+ *
+ * Inserts a new record into the "follows" table,
+ * indicating that the user with ID `user_id` has started following
+ * the user with ID `follow_id`. The current date is added as the
+ * start date of the follow relationship.
+ *
+ * @param user_id The ID of the user who is following.
+ * @param follow_id The ID of the user to be followed.
+ * @return true if the follow was successfully added, false otherwise.
+ */
+bool Pond::follow(const uint32_t& user_id, const uint32_t& follow_id) {
+  bool follow_added = false;
+
+  const char* query = 
+    "INSERT INTO follows (flwer, flwee, start_date) "
+    "VALUES (?, ?, ?)";
+  
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return ERROR_SQL;
+  }
+
+  // Bind parameters to prevent SQL injection.
+  sqlite3_bind_int(stmt, 1, user_id);                               // follower_id
+  sqlite3_bind_int(stmt, 2, follow_id);                             // followee_id
+  sqlite3_bind_text(stmt, 3, this->_getDate(), -1, SQLITE_STATIC);  // start_date
+
+
+  // Execute the query.
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    follow_added = true;
+  }
+  sqlite3_finalize(stmt);
+  
+  return follow_added;
+}
+
+/**
+ * @brief Removes a follow relationship between two users.
+ *
+ * Deletes a record from the "follows" table,
+ * indicating that the user with ID `user_id` has stopped
+ * following the user with ID `follow_id`.
+ *
+ * @param user_id The ID of the user who is unfollowing.
+ * @param follow_id The ID of the user to be unfollowed.
+ * @return true if the unfollow was successful, false otherwise.
+ */
+bool Pond::unfollow(const uint32_t& user_id, const uint32_t& follow_id) {
+  bool unfollowed = false;
+
+  const char* query = 
+    "DELETE FROM follows "
+    "WHERE flwer = ? "
+    "AND flwee = ?";
+  
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return ERROR_SQL;
+  }
+
+  // Bind parameters to prevent SQL injection.
+  sqlite3_bind_int(stmt, 1, user_id);   // follower_id
+  sqlite3_bind_int(stmt, 2, follow_id); // followee_id
+
+  // Execute the query.
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    unfollowed = true;
+  }
+  sqlite3_finalize(stmt);
+  
+  return unfollowed;
+}
+
+
+
+/**
  * @brief Retrieves the current time in GMT as a formatted string (HH:MM:SS).
  *
  * @return A string representing the current time in "HH:MM:SS" format.
@@ -214,3 +296,4 @@ char* Pond::_getDate() {
 
   return t;
 }
+
