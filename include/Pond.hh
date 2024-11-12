@@ -91,15 +91,15 @@ public:
   //   const std::uint32_t& user_id
   // );
 
-  // bool follow(
-  //   const std::uint32_t& user_id,
-  //   const std::string& follow_id
-  // );
+  bool follow(
+    const std::uint32_t& user_id,
+    const std::uint32_t& follow_id
+  );
 
-  // bool unfollow(
-  //   const std::uint32_t& user_id,
-  //   const std::string& follow_id
-  // );
+  bool unfollow(
+    const std::uint32_t& user_id,
+    const std::uint32_t& follow_id
+  );
 
   // std::vector<std::string> searchForTweets(
   //   const std::string& keywords,
@@ -132,5 +132,5 @@ private:
     uint32_t tweet_id
   );
 
-  // uint32_t generateUniqueTweetID();
+  uint32_t generateUniqueTweetID();
 };
