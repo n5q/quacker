@@ -40,7 +40,7 @@ void Quacker::loginPage() {
     uint32_t user_id;
     std::string password;
     
-    std::cout << QUACKER_BANNER << "\n--- Log In ---\nUser ID: ";)
+    std::cout << QUACKER_BANNER << "\n--- Log In ---\nUser ID: ";
     std::cin >> user_id; // <<< FIX THIS BRU
 
     std::cout << "Password: ";
