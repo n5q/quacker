@@ -40,7 +40,7 @@ int main() {
     }
 
     // Format the string as a C++ literal
-    output << "std::string banner = \"";
+    output << "static const std::string QUACKER_BANNER  = \"";
     output << escapedBanner;
     output << "\";\n";
     output.close();
