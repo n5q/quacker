@@ -184,7 +184,7 @@ bool Pond::createList(const int32_t& user_id, const std::string& list_name) {
   return list_created;
 }
 
-bool Pond::_listExists(const std::string& list_id, const int32_t& tweet_id, const int32_t& user_id) {
+bool Pond::_listExists(const std::string& list_name, const int32_t& user_id) {
   bool exists = false;
 
   const char* check_query = 
@@ -198,10 +198,10 @@ bool Pond::_listExists(const std::string& list_id, const int32_t& tweet_id, cons
 
   // Bind parameters to prevent SQL injection.
   sqlite3_bind_int(check_stmt, 1, user_id);                          // owner_id
-  sqlite3_bind_text(check_stmt, 2, list_id.c_str(), -1, SQLITE_STATIC); // lname
+  sqlite3_bind_text(check_stmt, 2, list_name.c_str(), -1, SQLITE_STATIC); // lname
 
   // Execute the query.
-  bool exists = sqlite3_step(check_stmt) == SQLITE_ROW;
+  exists = sqlite3_step(check_stmt) == SQLITE_ROW;
   sqlite3_finalize(check_stmt);
 
   if (!exists) {return false;}
@@ -220,7 +220,7 @@ bool Pond::addToList(const std::string& list_name, const int32_t& tweet_id, cons
   bool added_to_list = false;
 
   // check for existence first
-  if (!this->_listExists(list_name, tweet_id, user_id)) {
+  if (!this->_listExists(list_name, user_id)) {
     return added_to_list;
   }
 

@@ -79,11 +79,11 @@ public:
   bool createList(
     const std::int32_t& user_id,
     const std::string& list_name
-  )
+  );
 
   bool addToList(
     const std::string& list_name,
-    const int32_t& tweet_id
+    const std::int32_t& tweet_id,
     const std::int32_t& user_id
   );
 
