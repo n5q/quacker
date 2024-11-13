@@ -88,6 +88,7 @@ void Quacker::loginPage() {
         continue;
       }
     } else {
+<<<<<<< HEAD
       description = "Invalid User ID, ID must be a valid integer.";
       continue;
     }
@@ -131,6 +132,31 @@ void Quacker::signupPage() {
     if (name.empty()) return;
 
     // Get and validate the email
+=======
+      std::cin.clear();
+      std::system("clear");
+      std::cout << QUACKER_BANNER << "\n--- Log In ---\nInvalid login credentials. Please enter a valid 'User ID' and 'Password'.\n\nUser ID: ";
+    }
+  }
+}
+
+void Quacker::signupPage() {
+  while (this->_user_id == nullptr) {
+    std::system("clear");
+    std::cout << QUACKER_BANNER << "\n--- Sign Up ---\n";
+
+    std::string name, email, phone_str, password;
+    int phone_number;
+
+    std::cout << "Enter Name: ";
+    std::getline(std::cin >> std::ws, name);
+    if (name.empty()) {
+      std::cout << "Name cannot be empty. Press Enter to retry.";
+      std::cin.get();
+      continue;
+    }
+
+>>>>>>> origin/yousef
     std::cout << "Enter Email: ";
     std::getline(std::cin, email);
     if (email.empty()) return;
@@ -139,7 +165,6 @@ void Quacker::signupPage() {
       continue;
     }
 
-    // Get and validate the phone number
     std::cout << "Enter Phone Number: ";
     std::getline(std::cin, phone_str);
     if (phone_str.empty()) return;
@@ -149,22 +174,30 @@ void Quacker::signupPage() {
       continue;
     }
 
-    // Get and validate the password
     std::cout << "Enter Password: ";
     std::getline(std::cin, password);
     if (password.empty()) return;
 
-    // Add user to the database
     int32_t* new_user_id = pond.addUser(name, email, phone_number, password);
     
     // If the user is successfully added, assign the new user ID to _user_id and notify the user
     if (new_user_id != nullptr) {
+<<<<<<< HEAD
       this->_user_id = new_user_id;
       std::cout << "Account created! Press Enter to log in....\n";
       std::cin.get();
       break;
     } else {
         description = "Error during signup, please try again.\n";
+=======
+        this->_user_id = new_user_id;
+        std::cout << "Signup successful! Press Enter to log in.";
+        std::cin.get();
+        return;
+    } else {
+        std::cout << "Error during signup. Please try again.";
+        std::cin.get();
+>>>>>>> origin/yousef
     }
   }
 }

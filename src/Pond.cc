@@ -32,14 +32,13 @@ int Pond::loadDatabase(const std::string& db_filename) {
  * @param email The email of the user.
  * @param phone The phone number of the user.
  * @param password The password for the user's account.
- * @return true if the user was successfully added; false otherwise.
+ * @return the user_id of the user if added, nullptr otherwise.
  */
 int32_t* Pond::addUser(const std::string& name, const std::string& email, const int64_t& phone, const std::string& password) {
   int32_t user_id;
   
-  // Get a unique user ID
   if (!get_unique_user_id(user_id)) {
-    return nullptr;  // Return nullptr if we couldn't get a unique ID
+    return nullptr;
   }
   
   const char* query = 
@@ -62,11 +61,11 @@ int32_t* Pond::addUser(const std::string& name, const std::string& email, const 
   // Execute the query.
   int32_t* result = nullptr;
   if (sqlite3_step(stmt) == SQLITE_DONE) {
-    result = new int32_t(user_id);  // Allocate a new int32_t if user was added successfully
+    result = new int32_t(user_id);
   }
   
   sqlite3_finalize(stmt);
-  return result;  // Return either the pointer to user_id or nullptr
+  return result;
 }
 
 /**
