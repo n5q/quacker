@@ -73,6 +73,7 @@ public:
   //   const std::int32_t& user_id,
   //   const int32_t& retweet_tweet_id,
   //   const std::string& text
+  //   const bool spam
   // );
 
   bool createList(
