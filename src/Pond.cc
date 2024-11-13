@@ -372,7 +372,7 @@ bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
   return unfollowed;
 }
 
-std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std::string& keywords) {
+std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std::string& search_terms) {
   std::vector<std::pair<std::int32_t, std::string>> results;
 
   const char* query = 
@@ -387,7 +387,7 @@ std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std
   }
 
   // Bind parameters to prevent SQL injection.
-  sqlite3_bind_text(stmt, 1, keywords.c_str(), -1, SQLITE_STATIC); // name
+  sqlite3_bind_text(stmt, 1, search_terms.c_str(), -1, SQLITE_STATIC); // name
 
   // Execute the query.
   while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -400,6 +400,100 @@ std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std
   return results;
 }
 
+std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) {
+  std::vector<Pond::Tweet> results;
+  std::unordered_set<int32_t> tweet_ids; // keep track of unique tweet IDs across searches
+
+  // Split the keyword input into individual keywords
+  std::istringstream iss(search_terms);
+  std::vector<std::string> keywords;
+  std::string keyword;
+  while (iss >> keyword) {
+    keywords.push_back(keyword);
+  }
+
+  // Query to find tweets by hashtag in `hashtag_mentions`
+  const char* hashtag_query =
+    "SELECT tweets.tid, tweets.writer_id, tweets.text, tweets.tdate, tweets.ttime, tweets.replyto_tid "
+    "FROM tweets "
+    "JOIN hashtag_mentions ON tweets.tid = hashtag_mentions.tid "
+    "WHERE hashtag_mentions.hashtag = ? "
+    "ORDER BY tweets.tdate DESC, tweets.ttime DESC";
+
+  // Prepare to query by hashtag
+  sqlite3_stmt* stmt;
+  for (const std::string& kw : keywords) {
+    if (kw[0] == '#') {
+      std::string hashtag = kw.substr(1);  // Remove the `#` prefix
+
+      if (sqlite3_prepare_v2(this->_db, hashtag_query, -1, &stmt, nullptr) != SQLITE_OK) {
+        sqlite3_finalize(stmt);
+        continue;
+      }
+
+      sqlite3_bind_text(stmt, 1, hashtag.c_str(), -1, SQLITE_STATIC);
+
+      // Retrieve results
+      while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int32_t tweet_id = sqlite3_column_int(stmt, 0);
+        if (tweet_ids.find(tweet_id) == tweet_ids.end()) {
+          Tweet tweet;
+          tweet.tid = tweet_id;
+          tweet.writer_id = sqlite3_column_int(stmt, 1);
+          tweet.text = (const char*)(sqlite3_column_text(stmt, 2));
+          tweet.date = (const char*)(sqlite3_column_text(stmt, 3));
+          tweet.time = (const char*)(sqlite3_column_text(stmt, 4));
+          tweet.replyto_tid = sqlite3_column_int(stmt, 5);
+
+          results.push_back(tweet);
+          tweet_ids.insert(tweet_id);
+        }
+      }
+      sqlite3_finalize(stmt);
+    }
+  }
+
+  // Query to find tweets containing the keyword in `tweets` text
+  const char* text_query =
+    "SELECT tid, writer_id, text, tdate, ttime, replyto_tid "
+    "FROM tweets "
+    "WHERE text LIKE ? "
+    "ORDER BY tdate DESC, ttime DESC";
+
+  // Prepare to query by keyword in text
+  for (const std::string& kw : keywords) {
+    if (kw[0] != '#') {
+      std::string keyword_pattern = "%" + kw + "%";  
+
+      if (sqlite3_prepare_v2(this->_db, text_query, -1, &stmt, nullptr) != SQLITE_OK) {
+        sqlite3_finalize(stmt);
+        continue;
+      }
+
+      sqlite3_bind_text(stmt, 1, keyword_pattern.c_str(), -1, SQLITE_STATIC);
+
+      // Retrieve results
+      while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int32_t tweet_id = sqlite3_column_int(stmt, 0);
+        if (tweet_ids.find(tweet_id) == tweet_ids.end()) {
+          Tweet tweet;
+          tweet.tid = tweet_id;
+          tweet.writer_id = sqlite3_column_int(stmt, 1);
+          tweet.text = (const char*)(sqlite3_column_text(stmt, 2));
+          tweet.date = (const char*)(sqlite3_column_text(stmt, 3));
+          tweet.time = (const char*)(sqlite3_column_text(stmt, 4));
+          tweet.replyto_tid = sqlite3_column_int(stmt, 5);
+
+          results.push_back(tweet);
+          tweet_ids.insert(tweet_id);
+        }
+      }
+      sqlite3_finalize(stmt);
+    }
+  }
+
+  return results;
+}
 
 bool Pond::get_unique_user_id(int32_t& unique_id) {
   unique_id = 1;

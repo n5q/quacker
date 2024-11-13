@@ -6,6 +6,8 @@
 #include <vector>
 #include <chrono>
 #include <ctime>
+#include <unordered_set>
+#include <sstream>
 
 #include "definitions.hh"
 
@@ -117,12 +119,22 @@ public:
     const std::int32_t& follow_id
   );
 
-  std::vector<std::string> searchForTweets(
-    const std::string& keywords
+  struct Tweet {
+    int32_t tid;
+    int32_t writer_id;
+    std::string text;
+    std::string date;
+    std::string time;
+    int32_t replyto_tid;
+  };
+
+  std::vector<Tweet> searchForTweets(
+    const std::string& search_terms
   );
 
+  
   std::vector<std::pair<std::int32_t, std::string>> searchForUsers(
-    const std::string& keywords
+    const std::string& search_terms
   );
 
   // std::vector<std::pair<std::string, std::string>> searchForUsers(
