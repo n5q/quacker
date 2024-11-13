@@ -37,7 +37,7 @@ public:
   int32_t* addUser(
     const std::string& name,
     const std::string& email,
-    const int& phone,
+    const int64_t& phone,
     const std::string& password
   );
 
@@ -94,7 +94,7 @@ public:
   * @param password The password corresponding to the user ID.
   * @return true if the login credentials are valid; false otherwise.
   */
-  bool checkLogin(
+  int32_t* checkLogin(
     const std::int32_t& user_id,
     const std::string& password
   );

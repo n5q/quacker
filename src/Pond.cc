@@ -34,7 +34,7 @@ int Pond::loadDatabase(const std::string& db_filename) {
  * @param password The password for the user's account.
  * @return true if the user was successfully added; false otherwise.
  */
-int32_t* Pond::addUser(const std::string& name, const std::string& email, const int& phone, const std::string& password) {
+int32_t* Pond::addUser(const std::string& name, const std::string& email, const int64_t& phone, const std::string& password) {
   int32_t user_id;
   
   // Get a unique user ID
@@ -53,7 +53,7 @@ int32_t* Pond::addUser(const std::string& name, const std::string& email, const 
   }
 
   // Bind parameters to prevent SQL injection.
-  sqlite3_bind_int(stmt, 1, user_id);                               // usr
+  sqlite3_bind_int(stmt,  1, user_id);                              // usr
   sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_STATIC);      // name
   sqlite3_bind_text(stmt, 3, email.c_str(), -1, SQLITE_STATIC);     // email
   sqlite3_bind_int(stmt,  4, phone);                                // phone
@@ -184,30 +184,6 @@ bool Pond::createList(const int32_t& user_id, const std::string& list_name) {
   return list_created;
 }
 
-bool Pond::_listExists(const std::string& list_name, const int32_t& user_id) {
-  bool exists = false;
-
-  const char* check_query = 
-    "SELECT 1 FROM lists WHERE owner_id = ? AND lname = ?";
-  
-  sqlite3_stmt* check_stmt;
-  if (sqlite3_prepare_v2(this->_db, check_query, -1, &check_stmt, nullptr) != SQLITE_OK) {
-    sqlite3_finalize(check_stmt);
-    return false;
-  }
-
-  // Bind parameters to prevent SQL injection.
-  sqlite3_bind_int(check_stmt, 1, user_id);                          // owner_id
-  sqlite3_bind_text(check_stmt, 2, list_name.c_str(), -1, SQLITE_STATIC); // lname
-
-  // Execute the query.
-  exists = sqlite3_step(check_stmt) == SQLITE_ROW;
-  sqlite3_finalize(check_stmt);
-
-  if (!exists) {return false;}
-  else {return true;}
-}
-
 /**
  * @brief Adds a tweet to a list in the database.
  *
@@ -257,8 +233,8 @@ bool Pond::addToList(const std::string& list_name, const int32_t& tweet_id, cons
  * @param password The password corresponding to the user ID.
  * @return true if the login credentials are valid; false otherwise.
  */
-bool Pond::checkLogin(const int32_t& user_id, const std::string& password) {
-  bool valid_login = false;
+int32_t* Pond::checkLogin(const int32_t& user_id, const std::string& password) {
+  int32_t* user_id_ptr = nullptr;
 
   const char* query = 
     "SELECT * "
@@ -270,7 +246,7 @@ bool Pond::checkLogin(const int32_t& user_id, const std::string& password) {
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return false;
+    return nullptr;
   }
 
   // Bind parameters to prevent SQL injection.
@@ -280,11 +256,12 @@ bool Pond::checkLogin(const int32_t& user_id, const std::string& password) {
 
   // Execute the query.
   if (sqlite3_step(stmt) == SQLITE_ROW) {
-    valid_login = true;
+    int32_t retrieved_id = sqlite3_column_int(stmt, 0);
+    user_id_ptr = new int32_t(retrieved_id);
   }
   sqlite3_finalize(stmt);
   
-  return valid_login;
+  return user_id_ptr;
 }
 
 /**
@@ -449,3 +426,47 @@ char* Pond::_getDate() {
   return t;
 }
 
+/**
+ * @brief Checks if a list exists for a given user in the database.
+ *
+ * This function verifies the existence of a list identified by `list_name`
+ * for a specific user identified by `user_id` within the `lists` table
+ * of the database.
+ *
+ * @param list_name The name of the list to check for.
+ * @param user_id The ID of the user who owns the list.
+ * @return True if the list exists for the specified user, false otherwise.
+ *
+ * The function prepares and executes an SQL query to determine whether a row
+ * exists in the `lists` table with the given `owner_id` and `lname` values.
+ * Parameter binding is used to prevent SQL injection vulnerabilities.
+ *
+ * @note If there is an error preparing the SQL statement, the function will
+ *       finalize the statement and return false.
+ */
+bool Pond::_listExists(const std::string &list_name, const int32_t &user_id) {
+  bool exists = false;
+
+  const char* query = "SELECT 1 FROM lists WHERE owner_id = ? AND lname = ?";
+
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+
+  // Bind parameters to prevent SQL injection.
+  sqlite3_bind_int(stmt, 1, user_id);                                     // owner_id
+  sqlite3_bind_text(stmt, 2, list_name.c_str(), -1, SQLITE_STATIC);       // lname
+
+  // Execute the query.
+  exists = sqlite3_step(stmt) == SQLITE_ROW;
+  sqlite3_finalize(stmt);
+
+  if (!exists) {
+    return false;
+  }
+  else {
+    return true;
+  }
+}

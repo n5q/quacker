@@ -27,15 +27,66 @@ public:
   Quacker(const std::string& db_filename);
   ~Quacker();
 
+  std::string trim(const std::string& str);
+
   void run();
   
 private:
   void startPage();
+
+  /**
+   * @brief Displays the login page and prompts the user for credentials.
+   * 
+   * @note The credentials are verified using the `checkLogin` method, and if successful,
+   *       the `_user_id` member is updated with the user ID.
+   */
   void loginPage();
+
+  /**
+   * @brief Displays the sign-up page and prompts the user for details to create a new account.
+   * 
+   * @note The function utilizes `isValidEmail` for email validation, `isValidPhoneNumber` for phone number validation,
+   *       and `pond.addUser` to add the new user to the database.
+   */
   void signupPage();
 
-  int isValidPhoneNumber(const std::string& input);
+  /**
+   * @brief Validates a phone number string and returns its numeric value.
+   *
+   * Extracts digits from the input string and checks if it contains 10 or 11 digits,
+   * excluding any newline or carriage return characters. Returns the numeric value
+   * if valid, otherwise returns -1.
+   *
+   * @param input The phone number string to validate.
+   * @return The numeric value of the phone number if valid, -1 if invalid.
+   */
+  int64_t isValidPhoneNumber(const std::string& input);
+
+  /**
+   * @brief Validates an email address format.
+   *
+   * This function checks if the given email string adheres to a standard email
+   * format and ensures it does not contain any newline or carriage return
+   * characters, which are considered invalid.
+   *
+   * @param email The email address to validate.
+   * @return true if the email address is in a valid format, false otherwise.
+   *
+   * @note The regex used is sourced from https://emailregex.com/
+   */
   bool isValidEmail(const std::string& email);
+
+  /**
+   * @brief Determines if a string is a valid integer ID.
+   *
+   * If the entire
+   * string is successfully parsed as an integer (i.e., no non-numeric
+   * characters remain), it is considered a valid ID.
+   *
+   * @param str The string to check.
+   * @return true if the string is a valid integer, false otherwise.
+   */
+  bool isID(std::string str);
 
   Pond pond;
   int32_t* _user_id = nullptr;
