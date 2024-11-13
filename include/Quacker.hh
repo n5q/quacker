@@ -35,5 +35,5 @@ private:
   void signupPage();
 
   Pond pond;
-  std::string _user_id;
+  uint32_t* _user_id = nullptr;
 };

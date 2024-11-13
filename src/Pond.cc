@@ -48,7 +48,7 @@ bool Pond::addUser(const std::string& name, const std::string& email, const int&
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
   // Bind parameters to prevent SQL injection.
@@ -86,7 +86,7 @@ bool Pond::addPost(const uint32_t& tweet_id, const uint32_t& user_id, const std:
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
   // Bind parameters to prevent SQL injection.
@@ -124,7 +124,7 @@ bool Pond::addReply(const uint32_t& user_id, const uint32_t& reply_tweet_id, con
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
   // uint32_t new_tid = generateUniqueTweetID();
@@ -162,18 +162,19 @@ bool Pond::checkLogin(const uint32_t& user_id, const std::string& password) {
     "SELECT * "
     "FROM users "
     "WHERE usr = ? "
-    "AND pwd ?";
+    "AND pwd = ?";
   
   // Prepare the SQL statement.
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
   // Bind parameters to prevent SQL injection.
   sqlite3_bind_int(stmt, 1, user_id);                               // usr
   sqlite3_bind_text(stmt, 2, password.c_str(), -1, SQLITE_STATIC);  // pwd
+
 
   // Execute the query.
   if (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -207,7 +208,7 @@ bool Pond::follow(const uint32_t& user_id, const uint32_t& follow_id) {
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
   // Bind parameters to prevent SQL injection.
@@ -248,7 +249,7 @@ bool Pond::unfollow(const uint32_t& user_id, const uint32_t& follow_id) {
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
   // Bind parameters to prevent SQL injection.
@@ -263,8 +264,6 @@ bool Pond::unfollow(const uint32_t& user_id, const uint32_t& follow_id) {
   
   return unfollowed;
 }
-
-
 
 /**
  * @brief Retrieves the current time in GMT as a formatted string (HH:MM:SS).
