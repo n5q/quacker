@@ -36,5 +36,4 @@ private:
 
   Pond pond;
   std::string _user_id;
-
 };

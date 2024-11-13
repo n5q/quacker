@@ -108,11 +108,11 @@ public:
   );
 
   std::vector<std::string> searchForTweets(
-    const std::string& keywords,
+    const std::string& keywords
   );
 
   std::vector<std::string> searchForUsers(
-    const std::string& keywords,
+    const std::string& keywords
   );
 
   // std::vector<std::pair<std::string, std::string>> searchForUsers(

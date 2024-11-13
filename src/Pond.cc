@@ -52,7 +52,7 @@ bool Pond::addUser(const std::string& name, const std::string& email, const int&
   }
 
   // Bind parameters to prevent SQL injection.
-  sqlite3_bind_int(stmt, 1, user_id);   // usr
+  sqlite3_bind_int(stmt, 1, user_id);                               // usr
   sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_STATIC);      // name
   sqlite3_bind_text(stmt, 3, email.c_str(), -1, SQLITE_STATIC);     // email
   sqlite3_bind_int(stmt,  4, phone);                                // phone
