@@ -34,6 +34,9 @@ private:
   void loginPage();
   void signupPage();
 
+  int isValidPhoneNumber(const std::string& input);
+  bool isValidEmail(const std::string& email);
+
   Pond pond;
-  std::string _user_id;
+  int32_t* _user_id = nullptr;
 };

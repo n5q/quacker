@@ -34,21 +34,22 @@ int Pond::loadDatabase(const std::string& db_filename) {
  * @param password The password for the user's account.
  * @return true if the user was successfully added; false otherwise.
  */
-bool Pond::addUser(const std::string& name, const std::string& email, const int& phone, const std::string& password){
-  bool user_added = false;
-
-  // uint32_t user_id = generateID();
-  uint32_t user_id = 1; // <<<< temporary (permanent ._.)bannana
+int32_t* Pond::addUser(const std::string& name, const std::string& email, const int& phone, const std::string& password) {
+  int32_t user_id;
+  
+  // Get a unique user ID
+  if (!get_unique_user_id(user_id)) {
+    return nullptr;  // Return nullptr if we couldn't get a unique ID
+  }
   
   const char* query = 
     "INSERT INTO users (usr, name, email, phone, pwd) "
     "VALUES (?, ?, ?, ?, ?)";
   
-  // Prepare the SQL statement.
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return nullptr;
   }
 
   // Bind parameters to prevent SQL injection.
@@ -59,12 +60,13 @@ bool Pond::addUser(const std::string& name, const std::string& email, const int&
   sqlite3_bind_text(stmt, 5, password.c_str(), -1, SQLITE_STATIC);  // pwd
 
   // Execute the query.
+  int32_t* result = nullptr;
   if (sqlite3_step(stmt) == SQLITE_DONE) {
-    user_added = true;
+    result = new int32_t(user_id);  // Allocate a new int32_t if user was added successfully
   }
-  sqlite3_finalize(stmt);
   
-  return user_added;
+  sqlite3_finalize(stmt);
+  return result;  // Return either the pointer to user_id or nullptr
 }
 
 /**
@@ -75,7 +77,7 @@ bool Pond::addUser(const std::string& name, const std::string& email, const int&
  * @param text The text content of the post.
  * @return true if the post was successfully added; false otherwise.
  */
-bool Pond::addPost(const uint32_t& tweet_id, const uint32_t& user_id, const std::string& text) {
+bool Pond::addPost(const int32_t& tweet_id, const int32_t& user_id, const std::string& text) {
   bool post_added = false;
 
   const char* query = 
@@ -86,7 +88,7 @@ bool Pond::addPost(const uint32_t& tweet_id, const uint32_t& user_id, const std:
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
   // Bind parameters to prevent SQL injection.
@@ -113,7 +115,7 @@ bool Pond::addPost(const uint32_t& tweet_id, const uint32_t& user_id, const std:
  * @param text The text content of the reply.
  * @return true if the reply was successfully added; false otherwise.
  */
-bool Pond::addReply(const uint32_t& user_id, const uint32_t& reply_tweet_id, const std::string& text) {
+bool Pond::addReply(const int32_t& user_id, const int32_t& reply_tweet_id, const std::string& text) {
   bool reply_added = false;
 
   const char* query = 
@@ -124,11 +126,11 @@ bool Pond::addReply(const uint32_t& user_id, const uint32_t& reply_tweet_id, con
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
-  // uint32_t new_tid = generateUniqueTweetID();
-  uint32_t new_tid = 1; // Temporary ._. Fix LTR
+  // int32_t new_tid = generateUniqueTweetID();
+  int32_t new_tid = 1; // Temporary ._. Fix LTR
 
 
   // Bind parameters to prevent SQL injection
@@ -149,31 +151,132 @@ bool Pond::addReply(const uint32_t& user_id, const uint32_t& reply_tweet_id, con
 }
 
 /**
+ * @brief Creates a new list for a user in the database.
+ *
+ * @param user_id The ID of the user who owns the list.
+ * @param list_name The name of the new list.
+ * @return true if the list was successfully created; false otherwise.
+ */
+bool Pond::createList(const int32_t& user_id, const std::string& list_name) {
+  bool list_created = false;
+
+  const char* query = 
+    "INSERT INTO lists (owner_id, lname) "
+    "VALUES (?, ?)";
+
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+
+  // Bind parameters to prevent SQL injection.
+  sqlite3_bind_int(stmt, 1, user_id);                            // owner_id
+  sqlite3_bind_text(stmt, 2, list_name.c_str(), -1, SQLITE_STATIC); // lname
+
+  // Execute the query.
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    list_created = true;
+  }
+
+  sqlite3_finalize(stmt);
+  return list_created;
+}
+
+bool Pond::_listExists(const std::string& list_name, const int32_t& user_id) {
+  bool exists = false;
+
+  const char* check_query = 
+    "SELECT 1 FROM lists WHERE owner_id = ? AND lname = ?";
+  
+  sqlite3_stmt* check_stmt;
+  if (sqlite3_prepare_v2(this->_db, check_query, -1, &check_stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(check_stmt);
+    return false;
+  }
+
+  // Bind parameters to prevent SQL injection.
+  sqlite3_bind_int(check_stmt, 1, user_id);                          // owner_id
+  sqlite3_bind_text(check_stmt, 2, list_name.c_str(), -1, SQLITE_STATIC); // lname
+
+  // Execute the query.
+  exists = sqlite3_step(check_stmt) == SQLITE_ROW;
+  sqlite3_finalize(check_stmt);
+
+  if (!exists) {return false;}
+  else {return true;}
+}
+
+/**
+ * @brief Adds a tweet to a list in the database.
+ *
+ * @param list_id The name of the list.
+ * @param tweet_id The ID of the tweet to add to the list.
+ * @param user_id The ID of the user who owns the list.
+ * @return true if the tweet was successfully added to the list; false otherwise.
+ */
+bool Pond::addToList(const std::string& list_name, const int32_t& tweet_id, const int32_t& user_id) {
+  bool added_to_list = false;
+
+  // check for existence first
+  if (!this->_listExists(list_name, user_id)) {
+    return added_to_list;
+  }
+
+  const char* query = 
+    "INSERT INTO include (owner_id, lname, tid) "
+    "VALUES (?, ?, ?)";
+
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+
+  // Bind parameters to prevent SQL injection.
+  sqlite3_bind_int(stmt, 1, user_id);                          // owner_id
+  sqlite3_bind_text(stmt, 2, list_name.c_str(), -1, SQLITE_STATIC); // lname
+  sqlite3_bind_int(stmt, 3, tweet_id);                         // tid
+
+  // Execute the query.
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    added_to_list = true;
+  }
+
+  sqlite3_finalize(stmt);
+  return added_to_list;
+}
+
+
+/**
  * @brief Checks if the provided user ID and password are valid for login.
  *
  * @param user_id The user ID to check in the database.
  * @param password The password corresponding to the user ID.
  * @return true if the login credentials are valid; false otherwise.
  */
-bool Pond::checkLogin(const uint32_t& user_id, const std::string& password) {
+bool Pond::checkLogin(const int32_t& user_id, const std::string& password) {
   bool valid_login = false;
 
   const char* query = 
     "SELECT * "
     "FROM users "
     "WHERE usr = ? "
-    "AND pwd ?";
+    "AND pwd = ?";
   
   // Prepare the SQL statement.
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
   // Bind parameters to prevent SQL injection.
   sqlite3_bind_int(stmt, 1, user_id);                               // usr
   sqlite3_bind_text(stmt, 2, password.c_str(), -1, SQLITE_STATIC);  // pwd
+
 
   // Execute the query.
   if (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -196,7 +299,7 @@ bool Pond::checkLogin(const uint32_t& user_id, const std::string& password) {
  * @param follow_id The ID of the user to be followed.
  * @return true if the follow was successfully added, false otherwise.
  */
-bool Pond::follow(const uint32_t& user_id, const uint32_t& follow_id) {
+bool Pond::follow(const int32_t& user_id, const int32_t& follow_id) {
   bool follow_added = false;
 
   const char* query = 
@@ -207,7 +310,7 @@ bool Pond::follow(const uint32_t& user_id, const uint32_t& follow_id) {
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
   // Bind parameters to prevent SQL injection.
@@ -236,7 +339,7 @@ bool Pond::follow(const uint32_t& user_id, const uint32_t& follow_id) {
  * @param follow_id The ID of the user to be unfollowed.
  * @return true if the unfollow was successful, false otherwise.
  */
-bool Pond::unfollow(const uint32_t& user_id, const uint32_t& follow_id) {
+bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
   bool unfollowed = false;
 
   const char* query = 
@@ -248,7 +351,7 @@ bool Pond::unfollow(const uint32_t& user_id, const uint32_t& follow_id) {
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return ERROR_SQL;
+    return false;
   }
 
   // Bind parameters to prevent SQL injection.
@@ -264,7 +367,56 @@ bool Pond::unfollow(const uint32_t& user_id, const uint32_t& follow_id) {
   return unfollowed;
 }
 
+bool Pond::get_unique_user_id(int32_t& unique_id) {
+  unique_id = 1;
+  bool found = false;
+  
+  const char* query =
+    "SELECT usr FROM users WHERE usr >= 0 ORDER BY usr ASC";
+  
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+  
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    int32_t current_id = sqlite3_column_int(stmt, 0);
 
+    if (current_id == unique_id) {
+      unique_id++;
+    } else if (current_id > unique_id) {
+      found = true;
+      break;
+    }
+  }
+  
+  sqlite3_finalize(stmt);
+
+  if (!found && unique_id > INT32_MAX) {
+    unique_id = -1;
+    const char* query_neg =
+      "SELECT usr FROM users WHERE usr < 0 ORDER BY usr DESC";
+
+    if (sqlite3_prepare_v2(this->_db, query_neg, -1, &stmt, nullptr) != SQLITE_OK) {
+      sqlite3_finalize(stmt);
+      return false;
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+      int32_t current_id = sqlite3_column_int(stmt, 0);
+
+      if (current_id == unique_id) {
+        unique_id--;
+      } else if (current_id < unique_id) {
+        break;
+      }
+    }
+    sqlite3_finalize(stmt);
+  }
+  
+  return true;
+}
 
 /**
  * @brief Retrieves the current time in GMT as a formatted string (HH:MM:SS).
