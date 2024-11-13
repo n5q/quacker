@@ -372,6 +372,35 @@ bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
   return unfollowed;
 }
 
+std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std::string& keywords) {
+  std::vector<std::pair<std::int32_t, std::string>> results;
+
+  const char* query = 
+    "SELECT usr, name "
+    "FROM users "
+    "WHERE LOWER(name) LIKE LOWER(?)";
+
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return results;
+  }
+
+  // Bind parameters to prevent SQL injection.
+  sqlite3_bind_text(stmt, 1, keywords.c_str(), -1, SQLITE_STATIC); // name
+
+  // Execute the query.
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    int32_t id_result = sqlite3_column_int(stmt, 0);
+    std::string name_result = (const char*) sqlite3_column_text(stmt, 1);
+    results.push_back(std::make_pair(id_result, name_result));
+  }
+
+  sqlite3_finalize(stmt);
+  return results;
+}
+
+
 bool Pond::get_unique_user_id(int32_t& unique_id) {
   unique_id = 1;
   bool found = false;

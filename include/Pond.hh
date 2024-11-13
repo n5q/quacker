@@ -121,7 +121,7 @@ public:
     const std::string& keywords
   );
 
-  std::vector<std::string> searchForUsers(
+  std::vector<std::pair<std::int32_t, std::string>> searchForUsers(
     const std::string& keywords
   );
 
