@@ -99,6 +99,10 @@ public:
     const std::string& password
   );
   
+  std::string getUsername(
+    const std::int32_t& user_id
+  );
+
   // std::vector<std::string> getFeed(
   //   const std::int32_t& user_id
   // );

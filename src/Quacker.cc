@@ -32,27 +32,33 @@ void Quacker::run() {
  * @note The screen is cleared before each menu display to keep the interface clean.
  */
 void Quacker::startPage() {
+  std::string error = "";
   while (this->_user_id == nullptr) {
     std::system("clear");
 
     char select;
-    std::cout << QUACKER_BANNER << "\n1. Log in\n2. Sign up\n3. Exit\n\nSelection: ";
+    std::cout << QUACKER_BANNER << error << "\n1. Log in\n2. Sign up\n3. Exit\n\nSelection: ";
     std::cin >> select;
     // Consume any trailing '\n' and discard it
     { std::string dummy; std::getline(std::cin, dummy); }
     switch (select) {
       case '1':
+        error = "";
         loginPage();
         break;
       case '2':
+        error = "";
         signupPage();
+        
         break;
       case '3':
         std::system("clear");
+        error = "";
         exit(0);
         break;
 
       default:
+        error = "\nIvalid Input Entered [eg. 2]\n";
         break;
     }
   }
@@ -88,7 +94,6 @@ void Quacker::loginPage() {
         continue;
       }
     } else {
-<<<<<<< HEAD
       description = "Invalid User ID, ID must be a valid integer.";
       continue;
     }
@@ -107,6 +112,8 @@ void Quacker::loginPage() {
     }
     break;
   }
+  loged_in = true;
+  mainPage();
 }
 
 /**
@@ -132,31 +139,6 @@ void Quacker::signupPage() {
     if (name.empty()) return;
 
     // Get and validate the email
-=======
-      std::cin.clear();
-      std::system("clear");
-      std::cout << QUACKER_BANNER << "\n--- Log In ---\nInvalid login credentials. Please enter a valid 'User ID' and 'Password'.\n\nUser ID: ";
-    }
-  }
-}
-
-void Quacker::signupPage() {
-  while (this->_user_id == nullptr) {
-    std::system("clear");
-    std::cout << QUACKER_BANNER << "\n--- Sign Up ---\n";
-
-    std::string name, email, phone_str, password;
-    int phone_number;
-
-    std::cout << "Enter Name: ";
-    std::getline(std::cin >> std::ws, name);
-    if (name.empty()) {
-      std::cout << "Name cannot be empty. Press Enter to retry.";
-      std::cin.get();
-      continue;
-    }
-
->>>>>>> origin/yousef
     std::cout << "Enter Email: ";
     std::getline(std::cin, email);
     if (email.empty()) return;
@@ -165,6 +147,7 @@ void Quacker::signupPage() {
       continue;
     }
 
+    // Get and validate the phone number
     std::cout << "Enter Phone Number: ";
     std::getline(std::cin, phone_str);
     if (phone_str.empty()) return;
@@ -174,30 +157,24 @@ void Quacker::signupPage() {
       continue;
     }
 
+    // Get and validate the password
     std::cout << "Enter Password: ";
     std::getline(std::cin, password);
     if (password.empty()) return;
 
+    // Add user to the database
     int32_t* new_user_id = pond.addUser(name, email, phone_number, password);
     
     // If the user is successfully added, assign the new user ID to _user_id and notify the user
     if (new_user_id != nullptr) {
-<<<<<<< HEAD
       this->_user_id = new_user_id;
       std::cout << "Account created! Press Enter to log in....\n";
       std::cin.get();
+      loged_in = true;
+      mainPage();
       break;
     } else {
         description = "Error during signup, please try again.\n";
-=======
-        this->_user_id = new_user_id;
-        std::cout << "Signup successful! Press Enter to log in.";
-        std::cin.get();
-        return;
-    } else {
-        std::cout << "Error during signup. Please try again.";
-        std::cin.get();
->>>>>>> origin/yousef
     }
   }
 }
@@ -296,4 +273,41 @@ std::string Quacker::trim(const std::string& str) {
 
   // Return the trimmed string
   return (start < end) ? std::string(start, end) : std::string();
+}
+
+void Quacker::mainPage() {
+  std::string error = "";
+  while (loged_in) {
+    std::system("clear");
+    
+    std::string username = pond.getUsername(*(this->_user_id));
+
+    char select;
+    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n" << error << "\n1. Do stuff\n2. Do more stuff\n3. Exit\n\nSelection: ";
+    std::cin >> select;
+    // Consume any trailing '\n' and discard it
+    { std::string dummy; std::getline(std::cin, dummy); }
+    switch (select) {
+      case '1':
+        error = "";
+        break;
+      case '2':
+        error = "";
+        break;
+      case '3':
+        std::system("clear");
+        error = "";
+        
+        loged_in = false;
+        delete this->_user_id;
+        this->_user_id = nullptr;
+        break;
+
+      default:
+        error = "\nIvalid Input Entered [eg. 2]\n";
+        break;
+    }
+  }
+  
+  startPage();
 }

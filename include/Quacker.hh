@@ -88,6 +88,10 @@ private:
    */
   bool isID(std::string str);
 
+  void mainPage();
+
+  bool loged_in = false;
+
   Pond pond;
   int32_t* _user_id = nullptr;
 };
