@@ -151,6 +151,106 @@ bool Pond::addReply(const int32_t& user_id, const int32_t& reply_tweet_id, const
 }
 
 /**
+ * @brief Creates a new list for a user in the database.
+ *
+ * @param user_id The ID of the user who owns the list.
+ * @param list_name The name of the new list.
+ * @return true if the list was successfully created; false otherwise.
+ */
+bool Pond::createList(const int32_t& user_id, const std::string& list_name) {
+  bool list_created = false;
+
+  const char* query = 
+    "INSERT INTO lists (owner_id, lname) "
+    "VALUES (?, ?)";
+
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+
+  // Bind parameters to prevent SQL injection.
+  sqlite3_bind_int(stmt, 1, user_id);                            // owner_id
+  sqlite3_bind_text(stmt, 2, list_name.c_str(), -1, SQLITE_STATIC); // lname
+
+  // Execute the query.
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    list_created = true;
+  }
+
+  sqlite3_finalize(stmt);
+  return list_created;
+}
+
+bool Pond::_listExists(const std::string& list_id, const int32_t& tweet_id, const int32_t& user_id) {
+  bool exists = false;
+
+  const char* check_query = 
+    "SELECT 1 FROM lists WHERE owner_id = ? AND lname = ?";
+  
+  sqlite3_stmt* check_stmt;
+  if (sqlite3_prepare_v2(this->_db, check_query, -1, &check_stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(check_stmt);
+    return false;
+  }
+
+  // Bind parameters to prevent SQL injection.
+  sqlite3_bind_int(check_stmt, 1, user_id);                          // owner_id
+  sqlite3_bind_text(check_stmt, 2, list_id.c_str(), -1, SQLITE_STATIC); // lname
+
+  // Execute the query.
+  bool exists = sqlite3_step(check_stmt) == SQLITE_ROW;
+  sqlite3_finalize(check_stmt);
+
+  if (!exists) {return false;}
+  else {return true;}
+}
+
+/**
+ * @brief Adds a tweet to a list in the database.
+ *
+ * @param list_id The name of the list.
+ * @param tweet_id The ID of the tweet to add to the list.
+ * @param user_id The ID of the user who owns the list.
+ * @return true if the tweet was successfully added to the list; false otherwise.
+ */
+bool Pond::addToList(const std::string& list_name, const int32_t& tweet_id, const int32_t& user_id) {
+  bool added_to_list = false;
+
+  // check for existence first
+  if (!this->_listExists(list_name, tweet_id, user_id)) {
+    return added_to_list;
+  }
+
+  const char* query = 
+    "INSERT INTO include (owner_id, lname, tid) "
+    "VALUES (?, ?, ?)";
+
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+
+  // Bind parameters to prevent SQL injection.
+  sqlite3_bind_int(stmt, 1, user_id);                          // owner_id
+  sqlite3_bind_text(stmt, 2, list_name.c_str(), -1, SQLITE_STATIC); // lname
+  sqlite3_bind_int(stmt, 3, tweet_id);                         // tid
+
+  // Execute the query.
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    added_to_list = true;
+  }
+
+  sqlite3_finalize(stmt);
+  return added_to_list;
+}
+
+
+/**
  * @brief Checks if the provided user ID and password are valid for login.
  *
  * @param user_id The user ID to check in the database.

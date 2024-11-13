@@ -69,17 +69,22 @@ public:
     const std::string& text
   );
 
-  bool retweet(
-    const std::int32_t& user_id,
-    const int32_t& retweet_tweet_id,
-    const std::string& text
-  );
-
-  // bool addToList(
-  //   const std::string& list_id,
-  //   const int32_t& tweet_id
-  //   // const std::int32_t& user_id
+  // bool retweet(
+  //   const std::int32_t& user_id,
+  //   const int32_t& retweet_tweet_id,
+  //   const std::string& text
   // );
+
+  bool createList(
+    const std::int32_t& user_id,
+    const std::string& list_name
+  )
+
+  bool addToList(
+    const std::string& list_name,
+    const int32_t& tweet_id
+    const std::int32_t& user_id
+  );
 
   /**
   * @brief Checks if the provided user ID and password are valid for login.
@@ -139,8 +144,13 @@ private:
   char* _getDate();
 
   
-  bool checkTweetId(
+  bool _checkTweetId(
     int32_t tweet_id
+  );
+
+  bool _listExists(
+    const std::string& list_name,
+    const std::int32_t& user_id
   );
 
   int32_t generateUniqueTweetID();
