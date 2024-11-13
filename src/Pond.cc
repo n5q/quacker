@@ -1,5 +1,8 @@
 #include "Pond.hh"
 
+#include <sstream>
+
+
 Pond::Pond()
   : _db(nullptr) {
 }
@@ -290,6 +293,54 @@ std::string Pond::getUsername(const int32_t& user_id) {
   sqlite3_finalize(stmt);
 
   return username;
+}
+
+std::vector<std::string> Pond::getFeed(const int32_t& user_id) {
+    std::vector<std::string> feed;
+
+    const char* query = 
+        "SELECT 'tweet' AS type, t1.tid, u1.name, t1.writer_id, t1.tdate AS date, t1.ttime AS time, t1.text "
+        "FROM tweets t1 "
+        "JOIN follows f1 ON t1.writer_id = f1.flwee "
+        "JOIN users u1 ON t1.writer_id = u1.usr "
+        "WHERE f1.flwer = ? "
+        "UNION "
+        "SELECT 'retweet' AS type, t2.tid, u2.name, r.retweeter_id AS writer_id, r.rdate AS date, t2.ttime AS time, t2.text "
+        "FROM retweets r "
+        "JOIN tweets t2 ON t2.tid = r.tid "
+        "JOIN follows f2 ON r.retweeter_id = f2.flwee "
+        "JOIN users u2 ON r.retweeter_id = u2.usr "
+        "WHERE f2.flwer = ? AND r.spam = 0 "
+        "ORDER BY date DESC, time DESC";
+
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+        sqlite3_finalize(stmt);
+        return feed;
+    }
+
+    sqlite3_bind_int(stmt, 1, user_id);
+    sqlite3_bind_int(stmt, 2, user_id);
+    
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        const unsigned char* username = sqlite3_column_text(stmt, 2);  // Username of the tweet author
+        const unsigned char* date = sqlite3_column_text(stmt, 4);      // Date of tweet/retweet
+        const unsigned char* time = sqlite3_column_text(stmt, 5);      // Time of tweet/retweet
+        const unsigned char* text = sqlite3_column_text(stmt, 6);      // Text of tweet/retweet
+
+        std::ostringstream oss;
+        oss << (username ? reinterpret_cast<const char*>(username) : "Unknown");
+        oss << std::string(80 - oss.str().length(), ' '); 
+        oss << (date ? reinterpret_cast<const char*>(date) : "Unknown")
+            << " " << (time ? reinterpret_cast<const char*>(time) : "Unknown") << "\n\n";
+        oss << (text ? reinterpret_cast<const char*>(text) : "") << "\n";
+
+        feed.push_back(oss.str());
+    }
+
+    sqlite3_finalize(stmt);
+
+    return feed;
 }
 
 /**
