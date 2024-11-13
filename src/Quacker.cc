@@ -39,6 +39,8 @@ void Quacker::startPage() {
     char select;
     std::cout << QUACKER_BANNER << error << "\n1. Log in\n2. Sign up\n3. Exit\n\nSelection: ";
     std::cin >> select;
+    
+    if (std::cin.peek() != '\n') select = '0';
     // Consume any trailing '\n' and discard it
     { std::string dummy; std::getline(std::cin, dummy); }
     switch (select) {
@@ -287,6 +289,7 @@ void Quacker::mainPage() {
     std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n\n--- Your Feed ---\n" << processFeed(*(this->_user_id), FeedDisplayCount, error);
     std::cout << "\n" << error << "\n\n1. See More Of My Feed\n2. See Less Of My Feed\n3. Do Stuff\n4. Exit\n\nSelection: ";
     std::cin >> select;
+    if (std::cin.peek() != '\n') select = '0';
     // Consume any trailing '\n' and discard it
     { std::string dummy; std::getline(std::cin, dummy); }
     switch (select) {
