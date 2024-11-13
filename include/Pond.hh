@@ -34,7 +34,7 @@ public:
   * @param password The password for the user's account.
   * @return true if the user was successfully added; false otherwise.
   */
-  bool addUser(
+  int32_t* addUser(
     const std::string& name,
     const std::string& email,
     const int& phone,
@@ -50,8 +50,8 @@ public:
   * @return true if the post was successfully added; false otherwise.
   */
   bool addPost(
-    const uint32_t& tweet_id,
-    const std::uint32_t& user_id,
+    const int32_t& tweet_id,
+    const std::int32_t& user_id,
     const std::string& text
   );
 
@@ -64,21 +64,21 @@ public:
   * @return true if the reply was successfully added; false otherwise.
   */
   bool addReply(
-    const std::uint32_t& user_id,
-    const uint32_t& reply_tweet_id,
+    const std::int32_t& user_id,
+    const int32_t& reply_tweet_id,
     const std::string& text
   );
 
   bool retweet(
-    const std::uint32_t& user_id,
-    const uint32_t& retweet_tweet_id,
+    const std::int32_t& user_id,
+    const int32_t& retweet_tweet_id,
     const std::string& text
   );
 
   // bool addToList(
   //   const std::string& list_id,
-  //   const uint32_t& tweet_id
-  //   // const std::uint32_t& user_id
+  //   const int32_t& tweet_id
+  //   // const std::int32_t& user_id
   // );
 
   /**
@@ -89,22 +89,22 @@ public:
   * @return true if the login credentials are valid; false otherwise.
   */
   bool checkLogin(
-    const std::uint32_t& user_id,
+    const std::int32_t& user_id,
     const std::string& password
   );
   
   // std::vector<std::string> getFeed(
-  //   const std::uint32_t& user_id
+  //   const std::int32_t& user_id
   // );
 
   bool follow(
-    const std::uint32_t& user_id,
-    const std::uint32_t& follow_id
+    const std::int32_t& user_id,
+    const std::int32_t& follow_id
   );
 
   bool unfollow(
-    const std::uint32_t& user_id,
-    const std::uint32_t& follow_id
+    const std::int32_t& user_id,
+    const std::int32_t& follow_id
   );
 
   std::vector<std::string> searchForTweets(
@@ -118,6 +118,8 @@ public:
   // std::vector<std::pair<std::string, std::string>> searchForUsers(
   //   const std::string& keyword
   // );
+
+  bool get_unique_user_id(int32_t& unique_id);
 
 private:
   sqlite3* _db;
@@ -138,8 +140,8 @@ private:
 
   
   bool checkTweetId(
-    uint32_t tweet_id
+    int32_t tweet_id
   );
 
-  uint32_t generateUniqueTweetID();
+  int32_t generateUniqueTweetID();
 };

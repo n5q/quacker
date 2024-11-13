@@ -34,21 +34,22 @@ int Pond::loadDatabase(const std::string& db_filename) {
  * @param password The password for the user's account.
  * @return true if the user was successfully added; false otherwise.
  */
-bool Pond::addUser(const std::string& name, const std::string& email, const int& phone, const std::string& password){
-  bool user_added = false;
-
-  // uint32_t user_id = generateID();
-  uint32_t user_id = 1; // <<<< temporary (permanent ._.)bannana
+int32_t* Pond::addUser(const std::string& name, const std::string& email, const int& phone, const std::string& password) {
+  int32_t user_id;
+  
+  // Get a unique user ID
+  if (!get_unique_user_id(user_id)) {
+    return nullptr;  // Return nullptr if we couldn't get a unique ID
+  }
   
   const char* query = 
     "INSERT INTO users (usr, name, email, phone, pwd) "
     "VALUES (?, ?, ?, ?, ?)";
   
-  // Prepare the SQL statement.
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return false;
+    return nullptr;
   }
 
   // Bind parameters to prevent SQL injection.
@@ -59,12 +60,13 @@ bool Pond::addUser(const std::string& name, const std::string& email, const int&
   sqlite3_bind_text(stmt, 5, password.c_str(), -1, SQLITE_STATIC);  // pwd
 
   // Execute the query.
+  int32_t* result = nullptr;
   if (sqlite3_step(stmt) == SQLITE_DONE) {
-    user_added = true;
+    result = new int32_t(user_id);  // Allocate a new int32_t if user was added successfully
   }
-  sqlite3_finalize(stmt);
   
-  return user_added;
+  sqlite3_finalize(stmt);
+  return result;  // Return either the pointer to user_id or nullptr
 }
 
 /**
@@ -75,7 +77,7 @@ bool Pond::addUser(const std::string& name, const std::string& email, const int&
  * @param text The text content of the post.
  * @return true if the post was successfully added; false otherwise.
  */
-bool Pond::addPost(const uint32_t& tweet_id, const uint32_t& user_id, const std::string& text) {
+bool Pond::addPost(const int32_t& tweet_id, const int32_t& user_id, const std::string& text) {
   bool post_added = false;
 
   const char* query = 
@@ -113,7 +115,7 @@ bool Pond::addPost(const uint32_t& tweet_id, const uint32_t& user_id, const std:
  * @param text The text content of the reply.
  * @return true if the reply was successfully added; false otherwise.
  */
-bool Pond::addReply(const uint32_t& user_id, const uint32_t& reply_tweet_id, const std::string& text) {
+bool Pond::addReply(const int32_t& user_id, const int32_t& reply_tweet_id, const std::string& text) {
   bool reply_added = false;
 
   const char* query = 
@@ -127,8 +129,8 @@ bool Pond::addReply(const uint32_t& user_id, const uint32_t& reply_tweet_id, con
     return false;
   }
 
-  // uint32_t new_tid = generateUniqueTweetID();
-  uint32_t new_tid = 1; // Temporary ._. Fix LTR
+  // int32_t new_tid = generateUniqueTweetID();
+  int32_t new_tid = 1; // Temporary ._. Fix LTR
 
 
   // Bind parameters to prevent SQL injection
@@ -155,7 +157,7 @@ bool Pond::addReply(const uint32_t& user_id, const uint32_t& reply_tweet_id, con
  * @param password The password corresponding to the user ID.
  * @return true if the login credentials are valid; false otherwise.
  */
-bool Pond::checkLogin(const uint32_t& user_id, const std::string& password) {
+bool Pond::checkLogin(const int32_t& user_id, const std::string& password) {
   bool valid_login = false;
 
   const char* query = 
@@ -197,7 +199,7 @@ bool Pond::checkLogin(const uint32_t& user_id, const std::string& password) {
  * @param follow_id The ID of the user to be followed.
  * @return true if the follow was successfully added, false otherwise.
  */
-bool Pond::follow(const uint32_t& user_id, const uint32_t& follow_id) {
+bool Pond::follow(const int32_t& user_id, const int32_t& follow_id) {
   bool follow_added = false;
 
   const char* query = 
@@ -237,7 +239,7 @@ bool Pond::follow(const uint32_t& user_id, const uint32_t& follow_id) {
  * @param follow_id The ID of the user to be unfollowed.
  * @return true if the unfollow was successful, false otherwise.
  */
-bool Pond::unfollow(const uint32_t& user_id, const uint32_t& follow_id) {
+bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
   bool unfollowed = false;
 
   const char* query = 
@@ -263,6 +265,57 @@ bool Pond::unfollow(const uint32_t& user_id, const uint32_t& follow_id) {
   sqlite3_finalize(stmt);
   
   return unfollowed;
+}
+
+bool Pond::get_unique_user_id(int32_t& unique_id) {
+  unique_id = 1;
+  bool found = false;
+  
+  const char* query =
+    "SELECT usr FROM users WHERE usr >= 0 ORDER BY usr ASC";
+  
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+  
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    int32_t current_id = sqlite3_column_int(stmt, 0);
+
+    if (current_id == unique_id) {
+      unique_id++;
+    } else if (current_id > unique_id) {
+      found = true;
+      break;
+    }
+  }
+  
+  sqlite3_finalize(stmt);
+
+  if (!found && unique_id > INT32_MAX) {
+    unique_id = -1;
+    const char* query_neg =
+      "SELECT usr FROM users WHERE usr < 0 ORDER BY usr DESC";
+
+    if (sqlite3_prepare_v2(this->_db, query_neg, -1, &stmt, nullptr) != SQLITE_OK) {
+      sqlite3_finalize(stmt);
+      return false;
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+      int32_t current_id = sqlite3_column_int(stmt, 0);
+
+      if (current_id == unique_id) {
+        unique_id--;
+      } else if (current_id < unique_id) {
+        break;
+      }
+    }
+    sqlite3_finalize(stmt);
+  }
+  
+  return true;
 }
 
 /**
