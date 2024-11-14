@@ -1,8 +1,5 @@
 #include "Pond.hh"
 
-#include <sstream>
-
-
 Pond::Pond()
   : _db(nullptr) {
 }
