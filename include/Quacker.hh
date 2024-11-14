@@ -3,6 +3,11 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <regex>
+#include <vector>
+#include <sstream>
+#include <algorithm>
+#include <numeric>
 
 #include "Pond.hh"
 
@@ -87,6 +92,12 @@ private:
    * @return true if the string is a valid integer, false otherwise.
    */
   bool isID(std::string str);
+
+  void mainPage();
+
+  std::string processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error);
+
+  bool loged_in = false;
 
   Pond pond;
   int32_t* _user_id = nullptr;

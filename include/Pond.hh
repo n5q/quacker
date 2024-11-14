@@ -99,9 +99,13 @@ public:
     const std::string& password
   );
   
-  // std::vector<std::string> getFeed(
-  //   const std::int32_t& user_id
-  // );
+  std::string getUsername(
+    const std::int32_t& user_id
+  );
+
+  std::vector<std::string> getFeed(
+    const std::int32_t& user_id
+  );
 
   bool follow(
     const std::int32_t& user_id,
