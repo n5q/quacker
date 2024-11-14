@@ -265,4 +265,6 @@ private:
     const std::string& list_name,
     const std::int32_t& user_id
   );
+
+  std::string formatTweetText(const std::string& text, int lineWidth);
 };

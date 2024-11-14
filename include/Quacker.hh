@@ -8,6 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include <numeric>
+#include <iomanip>
 
 #include "Pond.hh"
 
@@ -113,4 +114,6 @@ private:
   Pond pond;
   int32_t* _user_id = nullptr;
   bool logged_in = false;
+  
+  std::string formatTweetText(const std::string& text, int lineWidth);
 };

@@ -294,6 +294,7 @@ std::string Pond::getUsername(const int32_t& user_id) {
     if (retrieved_username != nullptr) {
       username = reinterpret_cast<const char*>(retrieved_username);
     }
+    else username = "";
   }
 
   sqlite3_finalize(stmt);
@@ -347,7 +348,7 @@ std::vector<std::string> Pond::getFeed(const int32_t& user_id) {
         oss << std::string(66 - oss.str().length(), ' '); 
         oss << "Date and Time: " <<(date ? reinterpret_cast<const char*>(date) : "Unknown")
             << " " << (time ? reinterpret_cast<const char*>(time) : "Unknown") << "\n\n";
-        oss << "Text: " <<(text ? reinterpret_cast<const char*>(text) : "") << "\n";
+        oss << "Text: " <<(text ? formatTweetText(reinterpret_cast<const char*>(text), 80) : "") << "\n";
 
         feed.push_back(oss.str());
     }
@@ -644,11 +645,8 @@ std::vector<Pond::Quack> Pond::searchForQuacks(const std::string& search_terms) 
  * @return `true` if a unique ID is successfully found and assigned; `false` if an error occurs.
  */
 bool Pond::getUniqueUserID(int32_t& unique_id) {
-  unique_id = 1;
-  bool found = false;
-
   const char* query =
-    "SELECT usr FROM users WHERE usr >= 0 ORDER BY usr ASC";
+    "SELECT MAX(usr) FROM users";
 
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -656,43 +654,14 @@ bool Pond::getUniqueUserID(int32_t& unique_id) {
     return false;
   }
 
-  while (sqlite3_step(stmt) == SQLITE_ROW) {
-    int32_t current_id = sqlite3_column_int(stmt, 0);
-
-    if (current_id == unique_id) {
-      unique_id++;
-    }
-    else if (current_id > unique_id) {
-      found = true;
-      break;
-    }
+  if (sqlite3_step(stmt) == SQLITE_ROW) {
+    int32_t max_id = sqlite3_column_int(stmt, 0);
+    unique_id = max_id + 1;
+  } else {
+    unique_id = 1;
   }
 
   sqlite3_finalize(stmt);
-
-  if (!found && unique_id > INT32_MAX) {
-    unique_id = -1;
-    const char* query_neg =
-      "SELECT usr FROM users WHERE usr < 0 ORDER BY usr DESC";
-
-    if (sqlite3_prepare_v2(this->_db, query_neg, -1, &stmt, nullptr) != SQLITE_OK) {
-      sqlite3_finalize(stmt);
-      return false;
-    }
-
-    while (sqlite3_step(stmt) == SQLITE_ROW) {
-      int32_t current_id = sqlite3_column_int(stmt, 0);
-
-      if (current_id == unique_id) {
-        unique_id--;
-      }
-      else if (current_id < unique_id) {
-        break;
-      }
-    }
-    sqlite3_finalize(stmt);
-  }
-
   return true;
 }
 
@@ -763,4 +732,28 @@ bool Pond::_listExists(const std::string &list_name, const int32_t &user_id) {
   else {
     return true;
   }
+}
+
+std::string Pond::formatTweetText(const std::string& text, int lineWidth) {
+    std::istringstream words(text);  // Stream to split text into words
+    std::string word;
+    std::ostringstream formattedText;
+    int currentLineLength = 0;
+
+    while (words >> word) {
+        if (currentLineLength + word.length() + 1 > static_cast<std::string::size_type>(lineWidth)) {
+            formattedText << "\n";
+            currentLineLength = 0;
+        }
+
+        if (currentLineLength > 0) {
+            formattedText << " ";
+            currentLineLength++;
+        }
+
+        formattedText << word;
+        currentLineLength += word.length();
+    }
+
+    return formattedText.str();
 }
