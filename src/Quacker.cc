@@ -264,4 +264,3 @@ std::string Quacker::trim(const std::string& str) {
   // Return the trimmed string
   return (start < end) ? std::string(start, end) : std::string();
 }
-
