@@ -1,5 +1,5 @@
 #include "Quacker.hh"
-#include <regex>
+
 
 Quacker::Quacker(const std::string& db_filename) {
   if (pond.loadDatabase(db_filename)) {
@@ -39,6 +39,8 @@ void Quacker::startPage() {
     char select;
     std::cout << QUACKER_BANNER << error << "\n1. Log in\n2. Sign up\n3. Exit\n\nSelection: ";
     std::cin >> select;
+    
+    if (std::cin.peek() != '\n') select = '0';
     // Consume any trailing '\n' and discard it
     { std::string dummy; std::getline(std::cin, dummy); }
     switch (select) {
@@ -58,7 +60,7 @@ void Quacker::startPage() {
         break;
 
       default:
-        error = "\nIvalid Input Entered [eg. 2]\n";
+        error = "\nIvalid Input Entered [use: 1, 2, 3]\n";
         break;
     }
   }
@@ -306,8 +308,6 @@ int64_t Quacker::isValidPhoneNumber(const std::string& input) {
   try {
     return std::stoll(digits);
   } catch (const std::out_of_range&) {
-    std::cout << "out of range\n";
-    std::cin.get();
     return -1;
   }
 }
