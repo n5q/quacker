@@ -185,6 +185,12 @@ public:
     const int32_t& follow_id
   );
 
+  bool reply(
+    const int32_t& user_id,
+    const int32_t& reply_quack_id,
+    const std::string& text
+  );
+  
   /**
    * @brief Searches for users in the database whose names contain the specified search terms.
    *

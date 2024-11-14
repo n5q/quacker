@@ -426,6 +426,39 @@ bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
   return unfollowed;
 }
 
+bool Pond::reply(const int32_t& user_id, const int32_t& reply_quack_id, const std::string& text) {
+  bool reply_added = false;
+
+  const char* query =
+    "INSERT INTO quacks (tid, writer_id, text, tdate, ttime, replyto_tid) "
+    "VALUES (?, ?, ?, ?, ?, ?)";
+
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+
+  int32_t new_tid = -1; // TODO: get id from moussas function
+
+  // Bind parameters to prevent SQL injection
+  sqlite3_bind_int(stmt,  1, new_tid);                               // tid;
+  sqlite3_bind_int(stmt,  2, user_id);                               // writer_id
+  sqlite3_bind_text(stmt, 3, text.c_str(), -1, SQLITE_STATIC);       // text
+  sqlite3_bind_text(stmt, 4, this->_getDate(), -1, SQLITE_STATIC);   // tdate
+  sqlite3_bind_text(stmt, 5, this->_getTime(), -1, SQLITE_STATIC);   // ttime
+  sqlite3_bind_int(stmt,  6, reply_quack_id);                        // replyto_tid
+
+  // Execute the query.
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    reply_added = true;
+  }
+  sqlite3_finalize(stmt);
+
+  return reply_added;
+}
+
 /**
  * @brief Searches for users in the database whose names contain the specified search terms.
  *
