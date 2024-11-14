@@ -409,10 +409,12 @@ std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std
 
 
 /**
- * @brief fuzzy search for tweets containing specific keywords or hashtags.
+ * @brief search for tweets containing specific keywords or hashtags.
  *
  * @param search_terms A string of keywords or hashtags to search for in tweets.
  * @return A vector of tweets that contain the specified keywords or hashtags, ordered by date and time.
+ *
+ * @note case insensitive search, space seperated keywoards
  */
 std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) {
   std::vector<Pond::Tweet> results;
