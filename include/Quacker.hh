@@ -3,6 +3,11 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <regex>
+#include <vector>
+#include <sstream>
+#include <algorithm>
+#include <numeric>
 
 #include "Pond.hh"
 
@@ -50,6 +55,8 @@ private:
    */
   void signupPage();
 
+  void mainPage();
+
   /**
    * @brief Validates a phone number string and returns its numeric value.
    *
@@ -88,7 +95,7 @@ private:
    */
   bool isID(std::string str);
 
-  void mainPage();
+  std::string processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error);
 
   bool loged_in = false;
 
