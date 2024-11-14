@@ -539,11 +539,11 @@ std::vector<Pond::Quack> Pond::searchForQuacks(const std::string& search_terms) 
   std::vector<Pond::Quack> results;
   std::unordered_set<int32_t> quack_ids; // keep track of unique quack ids across searches
 
-  // Split the keyword input into individual keywords
+  // Split the keyword input into individual keywords, using commas as delimiters
   std::istringstream iss(search_terms);
   std::vector<std::string> keywords;
   std::string keyword;
-  while (iss >> keyword) {
+  while (std::getline(iss, keyword, ',')) { // specify comma as delimiter
     keywords.push_back(keyword);
   }
 
