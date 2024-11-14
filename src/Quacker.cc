@@ -190,7 +190,7 @@ void Quacker::mainPage() {
     std::string username = pond.getUsername(*(this->_user_id));
 
     char select;
-    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n\n-------------------------------------------- Your Feed --------------------------------------------\n\n";
+    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n\n-------------------------------------------- Your Feed ---------------------------------------------\n\n";
     std::cout << processFeed(*(this->_user_id), FeedDisplayCount, error);
     std::cout << "\n" << error << "\n\n1. See More Of My Feed\n"
                                       "2. See Less Of My Feed\n"

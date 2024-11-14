@@ -335,17 +335,19 @@ std::vector<std::string> Pond::getFeed(const int32_t& user_id) {
     sqlite3_bind_int(stmt, 2, user_id);
     
     while (sqlite3_step(stmt) == SQLITE_ROW) {
+        const unsigned char* tweet_id = sqlite3_column_text(stmt, 1);  // Id of quack 
         const unsigned char* username = sqlite3_column_text(stmt, 2);  // Username of the quack author
         const unsigned char* date = sqlite3_column_text(stmt, 4);      // Date of quack/requack
         const unsigned char* time = sqlite3_column_text(stmt, 5);      // Time of quack/requack
         const unsigned char* text = sqlite3_column_text(stmt, 6);      // Text of quack/requack
 
         std::ostringstream oss;
-        oss << (username ? reinterpret_cast<const char*>(username) : "Unknown");
-        oss << std::string(80 - oss.str().length(), ' '); 
-        oss << (date ? reinterpret_cast<const char*>(date) : "Unknown")
+        oss << "Quack Id: " << reinterpret_cast<const char*>(tweet_id);
+        oss << ", Author: " << (username ? reinterpret_cast<const char*>(username) : "Unknown");
+        oss << std::string(66 - oss.str().length(), ' '); 
+        oss << "Date and Time: " <<(date ? reinterpret_cast<const char*>(date) : "Unknown")
             << " " << (time ? reinterpret_cast<const char*>(time) : "Unknown") << "\n\n";
-        oss << (text ? reinterpret_cast<const char*>(text) : "") << "\n";
+        oss << "Text: " <<(text ? reinterpret_cast<const char*>(text) : "") << "\n";
 
         feed.push_back(oss.str());
     }
@@ -530,7 +532,12 @@ std::vector<Pond::Quack> Pond::searchForQuacks(const std::string& search_terms) 
         "FROM tweets "
         "WHERE LOWER(text) LIKE '% ' || LOWER(?) || ' %' "
         "OR LOWER(text) LIKE '% ' || LOWER(?) || ' %' "
+        "OR LOWER(text) LIKE '% ' || LOWER(?) "
+        "OR LOWER(text) LIKE '% ' || LOWER(?) "
+        "OR LOWER(text) LIKE LOWER(?) || ' %' "
+        "OR LOWER(text) LIKE LOWER(?) || ' %' "
         "ORDER BY tdate DESC, ttime DESC";
+
 
       if (sqlite3_prepare_v2(this->_db, text_query, -1, &stmt, nullptr) != SQLITE_OK) {
         sqlite3_finalize(stmt);
@@ -540,6 +547,10 @@ std::vector<Pond::Quack> Pond::searchForQuacks(const std::string& search_terms) 
       // std::string kw_ht = "#"+kw;
       sqlite3_bind_text(stmt, 1, kw.c_str(), -1, SQLITE_STATIC);
       sqlite3_bind_text(stmt, 2, ("#"+kw).c_str(), -1, SQLITE_STATIC);
+      sqlite3_bind_text(stmt, 3, kw.c_str(), -1, SQLITE_STATIC);
+      sqlite3_bind_text(stmt, 4, ("#"+kw).c_str(), -1, SQLITE_STATIC);
+      sqlite3_bind_text(stmt, 5, kw.c_str(), -1, SQLITE_STATIC);
+      sqlite3_bind_text(stmt, 6, ("#"+kw).c_str(), -1, SQLITE_STATIC);
 
       // Retrieve results
       while (sqlite3_step(stmt) == SQLITE_ROW) {
