@@ -428,18 +428,18 @@ std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) 
   }
 
   const char* hashtag_query =
-    "SELECT tweets.tid, tweets.writer_id, tweets.text, tweets.tdate, tweets.ttime, tweets.replyto_tid "
-    "FROM tweets "
-    "JOIN hashtag_mentions ON tweets.tid = hashtag_mentions.tid "
-    "WHERE LOWER(hashtag_mentions.term) LIKE LOWER(?) "
-    "ORDER BY tweets.tdate DESC, weets.ttime DESC";
+    "SELECT t.tid, t.writer_id, t.text, t.tdate, t.ttime, t.replyto_tid "
+    "FROM tweets t "
+    "JOIN hashtag_mentions ht ON t.tid = ht.tid "
+    "WHERE LOWER(ht.term) LIKE LOWER(?) "
+    "ORDER BY t.tdate DESC, t.ttime DESC";
 
   // Prepare to query 
   sqlite3_stmt* stmt;
   for (const std::string& kw : keywords) {
     if (kw[0] == '#') {
       // std::string hashtag = kw.substr(1);  // remove # prefix
-      std::string hashtag = "%" + kw + "%";
+      std::string hashtag = kw + "%";
 
       if (sqlite3_prepare_v2(this->_db, hashtag_query, -1, &stmt, nullptr) != SQLITE_OK) {
         sqlite3_finalize(stmt);
@@ -461,22 +461,18 @@ std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) 
           tweet.replyto_tid = sqlite3_column_int(stmt, 5);
 
           results.push_back(tweet);
-          tweet_ids.insert(tweet_id);
+          // tweet_ids.insert(tweet_id);
         }
       }
       sqlite3_finalize(stmt);
     }
-  }
 
-  const char* text_query =
-    "SELECT tid, writer_id, text, tdate, ttime, replyto_tid "
-    "FROM tweets "
-    "WHERE LOWER(text) LIKE LOWER(?) "
-    "ORDER BY tdate DESC, ttime DESC";
-
-  // Prepare to query
-  for (const std::string& kw : keywords) {
-    if (kw[0] != '#') {
+    else { // text keyword
+      const char* text_query =
+        "SELECT tid, writer_id, text, tdate, ttime, replyto_tid "
+        "FROM tweets "
+        "WHERE LOWER(text) LIKE LOWER(?) "
+        "ORDER BY tdate DESC, ttime DESC";
       std::string keyword_pattern = "%" + kw + "%";
 
       if (sqlite3_prepare_v2(this->_db, text_query, -1, &stmt, nullptr) != SQLITE_OK) {
