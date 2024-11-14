@@ -36,16 +36,16 @@ int Pond::loadDatabase(const std::string& db_filename) {
  */
 int32_t* Pond::addUser(const std::string& name, const std::string& email, const int64_t& phone, const std::string& password) {
   int32_t user_id;
-  
+
   // Get a unique user ID
   if (!get_unique_user_id(user_id)) {
     return nullptr;  // Return nullptr if we couldn't get a unique ID
   }
-  
-  const char* query = 
+
+  const char* query =
     "INSERT INTO users (usr, name, email, phone, pwd) "
     "VALUES (?, ?, ?, ?, ?)";
-  
+
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
@@ -53,10 +53,10 @@ int32_t* Pond::addUser(const std::string& name, const std::string& email, const 
   }
 
   // Bind parameters to prevent SQL injection.
-  sqlite3_bind_int(stmt,  1, user_id);                              // usr
+  sqlite3_bind_int(stmt, 1, user_id);                              // usr
   sqlite3_bind_text(stmt, 2, name.c_str(), -1, SQLITE_STATIC);      // name
   sqlite3_bind_text(stmt, 3, email.c_str(), -1, SQLITE_STATIC);     // email
-  sqlite3_bind_int(stmt,  4, phone);                                // phone
+  sqlite3_bind_int(stmt, 4, phone);                                // phone
   sqlite3_bind_text(stmt, 5, password.c_str(), -1, SQLITE_STATIC);  // pwd
 
   // Execute the query.
@@ -64,7 +64,7 @@ int32_t* Pond::addUser(const std::string& name, const std::string& email, const 
   if (sqlite3_step(stmt) == SQLITE_DONE) {
     result = new int32_t(user_id);  // Allocate a new int32_t if user was added successfully
   }
-  
+
   sqlite3_finalize(stmt);
   return result;  // Return either the pointer to user_id or nullptr
 }
@@ -80,7 +80,7 @@ int32_t* Pond::addUser(const std::string& name, const std::string& email, const 
 bool Pond::addPost(const int32_t& tweet_id, const int32_t& user_id, const std::string& text) {
   bool post_added = false;
 
-  const char* query = 
+  const char* query =
     "INSERT INTO posts (tid, writer_id, text, tdate, ttime) "
     "VALUES (?, ?, ?, ?, ?)";
 
@@ -92,18 +92,18 @@ bool Pond::addPost(const int32_t& tweet_id, const int32_t& user_id, const std::s
   }
 
   // Bind parameters to prevent SQL injection.
-  sqlite3_bind_int(stmt,  1, tweet_id);                              // tid
-  sqlite3_bind_int(stmt,  2, user_id);                               // writer_id
+  sqlite3_bind_int(stmt, 1, tweet_id);                              // tid
+  sqlite3_bind_int(stmt, 2, user_id);                               // writer_id
   sqlite3_bind_text(stmt, 3, text.c_str(), -1, SQLITE_STATIC);       // text
   sqlite3_bind_text(stmt, 4, this->_getDate(), -1, SQLITE_STATIC);   // tdate
   sqlite3_bind_text(stmt, 5, this->_getTime(), -1, SQLITE_STATIC);   // ttime
 
   // Execute the query.
   if (sqlite3_step(stmt) == SQLITE_ROW) {
-      post_added = true;
+    post_added = true;
   }
   sqlite3_finalize(stmt);
-  
+
   return post_added;
 }
 
@@ -118,7 +118,7 @@ bool Pond::addPost(const int32_t& tweet_id, const int32_t& user_id, const std::s
 bool Pond::addReply(const int32_t& user_id, const int32_t& reply_tweet_id, const std::string& text) {
   bool reply_added = false;
 
-  const char* query = 
+  const char* query =
     "INSERT INTO tweets (tid, writer_id, text, tdate, ttime, replyto_tid) "
     "VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -134,19 +134,19 @@ bool Pond::addReply(const int32_t& user_id, const int32_t& reply_tweet_id, const
 
 
   // Bind parameters to prevent SQL injection
-  sqlite3_bind_int(stmt,  1, new_tid);                               // tid;
-  sqlite3_bind_int(stmt,  2, user_id);                               // writer_id
+  sqlite3_bind_int(stmt, 1, new_tid);                               // tid;
+  sqlite3_bind_int(stmt, 2, user_id);                               // writer_id
   sqlite3_bind_text(stmt, 3, text.c_str(), -1, SQLITE_STATIC);       // text
   sqlite3_bind_text(stmt, 4, this->_getDate(), -1, SQLITE_STATIC);   // tdate
   sqlite3_bind_text(stmt, 5, this->_getDate(), -1, SQLITE_STATIC);   // ttime
-  sqlite3_bind_int(stmt,  6, reply_tweet_id);                        // replyto_tid
+  sqlite3_bind_int(stmt, 6, reply_tweet_id);                        // replyto_tid
 
   // Execute the query.
   if (sqlite3_step(stmt) == SQLITE_DONE) {
-      reply_added = true;
+    reply_added = true;
   }
   sqlite3_finalize(stmt);
-  
+
   return reply_added;
 }
 
@@ -160,7 +160,7 @@ bool Pond::addReply(const int32_t& user_id, const int32_t& reply_tweet_id, const
 bool Pond::createList(const int32_t& user_id, const std::string& list_name) {
   bool list_created = false;
 
-  const char* query = 
+  const char* query =
     "INSERT INTO lists (owner_id, lname) "
     "VALUES (?, ?)";
 
@@ -200,7 +200,7 @@ bool Pond::addToList(const std::string& list_name, const int32_t& tweet_id, cons
     return added_to_list;
   }
 
-  const char* query = 
+  const char* query =
     "INSERT INTO include (owner_id, lname, tid) "
     "VALUES (?, ?, ?)";
 
@@ -236,12 +236,12 @@ bool Pond::addToList(const std::string& list_name, const int32_t& tweet_id, cons
 int32_t* Pond::checkLogin(const int32_t& user_id, const std::string& password) {
   int32_t* user_id_ptr = nullptr;
 
-  const char* query = 
+  const char* query =
     "SELECT * "
     "FROM users "
     "WHERE usr = ? "
     "AND pwd = ?";
-  
+
   // Prepare the SQL statement.
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -260,14 +260,14 @@ int32_t* Pond::checkLogin(const int32_t& user_id, const std::string& password) {
     user_id_ptr = new int32_t(retrieved_id);
   }
   sqlite3_finalize(stmt);
-  
+
   return user_id_ptr;
 }
 
 std::string Pond::getUsername(const int32_t& user_id) {
   std::string username;
 
-  const char* query = 
+  const char* query =
     "SELECT name "
     "FROM users "
     "WHERE usr = ?";
@@ -307,10 +307,10 @@ std::string Pond::getUsername(const int32_t& user_id) {
 bool Pond::follow(const int32_t& user_id, const int32_t& follow_id) {
   bool follow_added = false;
 
-  const char* query = 
+  const char* query =
     "INSERT INTO follows (flwer, flwee, start_date) "
     "VALUES (?, ?, ?)";
-  
+
   // Prepare the SQL statement.
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -329,7 +329,7 @@ bool Pond::follow(const int32_t& user_id, const int32_t& follow_id) {
     follow_added = true;
   }
   sqlite3_finalize(stmt);
-  
+
   return follow_added;
 }
 
@@ -347,11 +347,11 @@ bool Pond::follow(const int32_t& user_id, const int32_t& follow_id) {
 bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
   bool unfollowed = false;
 
-  const char* query = 
+  const char* query =
     "DELETE FROM follows "
     "WHERE flwer = ? "
     "AND flwee = ?";
-  
+
   // Prepare the SQL statement.
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -368,16 +368,23 @@ bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
     unfollowed = true;
   }
   sqlite3_finalize(stmt);
-  
+
   return unfollowed;
 }
 
+/**
+ * @brief Searches for users in the database whose names contain the specified search terms.
+ *
+ * @param search_terms The terms to search for in user names.
+ * @return A vector of pairs containing user IDs and names that match the search terms.
+ */
 std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std::string& search_terms) {
   std::vector<std::pair<std::int32_t, std::string>> results;
 
-  const char* query = 
+  const char* query =
     "SELECT usr, name "
     "FROM users "
+    // lower for case insensitive search
     "WHERE LOWER(name) LIKE LOWER(?)";
 
   sqlite3_stmt* stmt;
@@ -387,12 +394,13 @@ std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std
   }
 
   // Bind parameters to prevent SQL injection.
-  sqlite3_bind_text(stmt, 1, search_terms.c_str(), -1, SQLITE_STATIC); // name
+  std::string search_pattern = "%" + search_terms + "%";
+  sqlite3_bind_text(stmt, 1, search_pattern.c_str(), -1, SQLITE_STATIC); // name
 
   // Execute the query.
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     int32_t id_result = sqlite3_column_int(stmt, 0);
-    std::string name_result = (const char*) sqlite3_column_text(stmt, 1);
+    std::string name_result = (const char*)sqlite3_column_text(stmt, 1);
     results.push_back(std::make_pair(id_result, name_result));
   }
 
@@ -400,9 +408,16 @@ std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std
   return results;
 }
 
+
+/**
+ * @brief fuzzy search for tweets containing specific keywords or hashtags.
+ *
+ * @param search_terms A string of keywords or hashtags to search for in tweets.
+ * @return A vector of tweets that contain the specified keywords or hashtags, ordered by date and time.
+ */
 std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) {
   std::vector<Pond::Tweet> results;
-  std::unordered_set<int32_t> tweet_ids; // keep track of unique tweet IDs across searches
+  std::unordered_set<int32_t> tweet_ids; // keep track of unique tweet ids across searches
 
   // Split the keyword input into individual keywords
   std::istringstream iss(search_terms);
@@ -412,19 +427,19 @@ std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) 
     keywords.push_back(keyword);
   }
 
-  // Query to find tweets by hashtag in `hashtag_mentions`
   const char* hashtag_query =
     "SELECT tweets.tid, tweets.writer_id, tweets.text, tweets.tdate, tweets.ttime, tweets.replyto_tid "
     "FROM tweets "
     "JOIN hashtag_mentions ON tweets.tid = hashtag_mentions.tid "
-    "WHERE hashtag_mentions.hashtag = ? "
-    "ORDER BY tweets.tdate DESC, tweets.ttime DESC";
+    "WHERE LOWER(hashtag_mentions.term) LIKE LOWER(?) "
+    "ORDER BY tweets.tdate DESC, weets.ttime DESC";
 
-  // Prepare to query by hashtag
+  // Prepare to query 
   sqlite3_stmt* stmt;
   for (const std::string& kw : keywords) {
     if (kw[0] == '#') {
-      std::string hashtag = kw.substr(1);  // Remove the `#` prefix
+      // std::string hashtag = kw.substr(1);  // remove # prefix
+      std::string hashtag = "%" + kw + "%";
 
       if (sqlite3_prepare_v2(this->_db, hashtag_query, -1, &stmt, nullptr) != SQLITE_OK) {
         sqlite3_finalize(stmt);
@@ -453,17 +468,16 @@ std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) 
     }
   }
 
-  // Query to find tweets containing the keyword in `tweets` text
   const char* text_query =
     "SELECT tid, writer_id, text, tdate, ttime, replyto_tid "
     "FROM tweets "
-    "WHERE text LIKE ? "
+    "WHERE LOWER(text) LIKE LOWER(?) "
     "ORDER BY tdate DESC, ttime DESC";
 
-  // Prepare to query by keyword in text
+  // Prepare to query
   for (const std::string& kw : keywords) {
     if (kw[0] != '#') {
-      std::string keyword_pattern = "%" + kw + "%";  
+      std::string keyword_pattern = "%" + kw + "%";
 
       if (sqlite3_prepare_v2(this->_db, text_query, -1, &stmt, nullptr) != SQLITE_OK) {
         sqlite3_finalize(stmt);
@@ -498,27 +512,28 @@ std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) 
 bool Pond::get_unique_user_id(int32_t& unique_id) {
   unique_id = 1;
   bool found = false;
-  
+
   const char* query =
     "SELECT usr FROM users WHERE usr >= 0 ORDER BY usr ASC";
-  
+
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
     return false;
   }
-  
+
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     int32_t current_id = sqlite3_column_int(stmt, 0);
 
     if (current_id == unique_id) {
       unique_id++;
-    } else if (current_id > unique_id) {
+    }
+    else if (current_id > unique_id) {
       found = true;
       break;
     }
   }
-  
+
   sqlite3_finalize(stmt);
 
   if (!found && unique_id > INT32_MAX) {
@@ -536,13 +551,14 @@ bool Pond::get_unique_user_id(int32_t& unique_id) {
 
       if (current_id == unique_id) {
         unique_id--;
-      } else if (current_id < unique_id) {
+      }
+      else if (current_id < unique_id) {
         break;
       }
     }
     sqlite3_finalize(stmt);
   }
-  
+
   return true;
 }
 
@@ -557,7 +573,7 @@ char* Pond::_getTime() {
 
   char* t = new char[9];
   std::strftime(t, sizeof(t), "%H:%M:%S", gmt);
-  
+
   return t;
 }
 
