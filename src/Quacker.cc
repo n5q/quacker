@@ -181,6 +181,54 @@ void Quacker::signupPage() {
   }
 }
 
+void Quacker::mainPage() {
+  std::string error = "";
+  int32_t FeedDisplayCount = 5;
+  while (loged_in) {
+    std::system("clear");
+    
+    std::string username = pond.getUsername(*(this->_user_id));
+
+    char select;
+    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n\n-------------------------------------------- Your Feed --------------------------------------------\n\n";
+    std::cout << processFeed(*(this->_user_id), FeedDisplayCount, error);
+    std::cout << "\n" << error << "\n\n1. See More Of My Feed\n2. See Less Of My Feed\n3. Do Stuff\n4. Exit\n\nSelection: ";
+    std::cin >> select;
+    if (std::cin.peek() != '\n') select = '0';
+    // Consume any trailing '\n' and discard it
+    { std::string dummy; std::getline(std::cin, dummy); }
+    switch (select) {
+      case '1':
+        FeedDisplayCount += 5;
+        error = "";
+        break;
+      case '2':
+        FeedDisplayCount -= 5;
+        error = "";
+        break;
+      case '3':
+        FeedDisplayCount = 5;
+        error = "";
+        break;
+      case '4':
+        std::system("clear");
+        FeedDisplayCount = 5;
+        error = "";
+        
+        loged_in = false;
+        delete this->_user_id;
+        this->_user_id = nullptr;
+        break;
+
+      default:
+        error = "\nInvalid Input Entered [use: 1, 2, 3, 4].\n";
+        break;
+    }
+  }
+  
+  startPage();
+}
+
 /**
  * @brief Validates a phone number string and returns its numeric value.
  *
@@ -211,8 +259,6 @@ int64_t Quacker::isValidPhoneNumber(const std::string& input) {
   try {
     return std::stoll(digits);
   } catch (const std::out_of_range&) {
-    std::cout << "out of range\n";
-    std::cin.get();
     return -1;
   }
 }
@@ -277,54 +323,6 @@ std::string Quacker::trim(const std::string& str) {
   return (start < end) ? std::string(start, end) : std::string();
 }
 
-void Quacker::mainPage() {
-  std::string error = "";
-  int32_t FeedDisplayCount = 5;
-  while (loged_in) {
-    std::system("clear");
-    
-    std::string username = pond.getUsername(*(this->_user_id));
-
-    char select;
-    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n\n-------------------------------------------- Your Feed --------------------------------------------\n\n";
-    std::cout << processFeed(*(this->_user_id), FeedDisplayCount, error);
-    std::cout << "\n" << error << "\n\n1. See More Of My Feed\n2. See Less Of My Feed\n3. Do Stuff\n4. Exit\n\nSelection: ";
-    std::cin >> select;
-    if (std::cin.peek() != '\n') select = '0';
-    // Consume any trailing '\n' and discard it
-    { std::string dummy; std::getline(std::cin, dummy); }
-    switch (select) {
-      case '1':
-        FeedDisplayCount += 5;
-        error = "";
-        break;
-      case '2':
-        FeedDisplayCount -= 5;
-        error = "";
-        break;
-      case '3':
-        FeedDisplayCount = 5;
-        error = "";
-        break;
-      case '4':
-        std::system("clear");
-        FeedDisplayCount = 5;
-        error = "";
-        
-        loged_in = false;
-        delete this->_user_id;
-        this->_user_id = nullptr;
-        break;
-
-      default:
-        error = "\nIvalid Input Entered [use: 1, 2, 3, 4]\n";
-        break;
-    }
-  }
-  
-  startPage();
-}
-
 std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error) {
     std::vector<std::string> feed = pond.getFeed(user_id);
 
@@ -332,7 +330,7 @@ std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDispl
 
     if (FeedDisplayCount >= maxTweets + 5) {
         // Case 1: FeedDisplayCount is 5 or more beyond the available tweets
-        error = "\nYou Have No More Tweets Left To Display\n";
+        error = "\nYou Have No More Tweets Left To Display.\n";
         FeedDisplayCount = std::max(0, static_cast<int>(FeedDisplayCount) - 5);
         std::ostringstream oss;
         for (int32_t i = 0; i < maxTweets; ++i) {
@@ -351,7 +349,7 @@ std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDispl
     } else if (FeedDisplayCount <= 0) {
         // Case 4: FeedDisplayCount is less than zero
         
-        if(FeedDisplayCount != 0) error = "\nYou Are Already Not Displaying Any Tweets\n";
+        if(FeedDisplayCount != 0) error = "\nYou Are Already Not Displaying Any Tweets.\n";
         FeedDisplayCount = 0;
         return "";
     }

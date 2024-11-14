@@ -55,6 +55,8 @@ private:
    */
   void signupPage();
 
+  void mainPage();
+
   /**
    * @brief Validates a phone number string and returns its numeric value.
    *
@@ -92,8 +94,6 @@ private:
    * @return true if the string is a valid integer, false otherwise.
    */
   bool isID(std::string str);
-
-  void mainPage();
 
   std::string processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error);
 

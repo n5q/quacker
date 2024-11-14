@@ -135,7 +135,6 @@ bool Pond::addReply(const int32_t& user_id, const int32_t& reply_tweet_id, const
   // int32_t new_tid = generateUniqueTweetID();
   int32_t new_tid = 1; // Temporary ._. Fix LTR
 
-
   // Bind parameters to prevent SQL injection
   sqlite3_bind_int(stmt,  1, new_tid);                               // tid;
   sqlite3_bind_int(stmt,  2, user_id);                               // writer_id
