@@ -55,6 +55,8 @@ private:
    */
   void signupPage();
 
+  void mainPage();
+  
   void userSearchPage();
   void quackSearchPage();
 

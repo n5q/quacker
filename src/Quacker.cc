@@ -240,7 +240,7 @@ void Quacker::quackSearchPage() {
     std::cout << QUACKER_BANNER << "\n" << description << "\n\n--- Quack Search ---\n";
 
     std::string search_term;
-    std::cout << "Search for a quack: ";
+    std::cout << "Search for a Quack: ";
     std::getline(std::cin, search_term);
     search_term = trim(search_term);
     if (search_term.empty()) return;
@@ -250,10 +250,10 @@ void Quacker::quackSearchPage() {
 
     // display results
     if (results.empty()) {
-      std::cout << "No quacks found matching the search term.\n";
+      std::cout << "No Quacks found matching the search term.\n";
     }
     else {
-      std::cout << "Found " << results.size() << " quacks matching the search term.\n";
+      std::cout << "Found " << results.size() << " Quacks matching the search term.\n";
       for (const Pond::Tweet& result : results) {
         std::cout << "Quack ID: " << result.tid << ", Writer ID: " << result.writer_id
                   << ", Text: " << result.text << ", Date: " << result.date
@@ -277,6 +277,60 @@ void Quacker::quackSearchPage() {
   }
 }
 
+void Quacker::mainPage() {
+  std::string error = "";
+  int32_t FeedDisplayCount = 5;
+  while (loged_in) {
+    std::system("clear");
+    
+    std::string username = pond.getUsername(*(this->_user_id));
+
+    char select;
+    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n\n-------------------------------------------- Your Feed --------------------------------------------\n\n";
+    std::cout << processFeed(*(this->_user_id), FeedDisplayCount, error);
+    std::cout << "\n" << error << "\n\n1. See More Of My Feed\n"
+                                      "2. See Less Of My Feed\n"
+                                      "3. Search For Users\n"
+                                      "4. Search for Quacks\n"
+                                      "5. Log Out\n"
+                                      "Selection: ";
+    std::cin >> select;
+    if (std::cin.peek() != '\n') select = '0';
+    // Consume any trailing '\n' and discard it
+    { std::string dummy; std::getline(std::cin, dummy); }
+    switch (select) {
+      case '1':
+        FeedDisplayCount += 5;
+        error = "";
+        break;
+      case '2':
+        FeedDisplayCount -= 5;
+        error = "";
+        break;
+      case '3':
+        this->userSearchPage();
+        error = "";
+        break;
+      case '4':
+        this->quackSearchPage();
+        error = "";
+        break;
+      case '5':
+        std::system("clear");
+        FeedDisplayCount = 5;
+        error = "";
+        loged_in = false;
+        delete this->_user_id;
+        this->_user_id = nullptr;
+        break;
+      default:
+        error = "\nInvalid Input Entered [use: 1, 2, 3, 4, 5].\n";
+        break;
+    }
+  }
+  
+  startPage();
+}
 
 /**
  * @brief Validates a phone number string and returns its numeric value.
@@ -372,45 +426,45 @@ std::string Quacker::trim(const std::string& str) {
   return (start < end) ? std::string(start, end) : std::string();
 }
 
-void Quacker::mainPage() {
-  std::string error = "";
-  while (loged_in) {
-    std::system("clear");
-    
-    std::string username = pond.getUsername(*(this->_user_id));
+std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error) {
+    std::vector<std::string> feed = pond.getFeed(user_id);
 
-    char select;
-    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n" << error <<
-      "\n1. Search for users"
-      "\n2. Search for quacks"
-      "\n3. Exit"
-      "\n\nSelection: ";
-    std::cin >> select;
-    // Consume any trailing '\n' and discard it
-    { std::string dummy; std::getline(std::cin, dummy); }
-    switch (select) {
-      case '1':
-        this->userSearchPage();
-        // error = "";
-        break;
-      case '2':
-        this->quackSearchPage();
-        // error = "";
-        break;
-      case '3':
-        std::system("clear");
-        error = "";
+    int32_t maxTweets = feed.size();
+
+    if (FeedDisplayCount >= maxTweets + 5) {
+        // Case 1: FeedDisplayCount is 5 or more beyond the available tweets
+        error = "\nYou Have No More Tweets Left To Display.\n";
+        FeedDisplayCount = std::max(0, static_cast<int>(FeedDisplayCount) - 5);
+        std::ostringstream oss;
+        for (int32_t i = 0; i < maxTweets; ++i) {
+            oss << feed[i] << "\n";
+            for(int i = 0; i < 100; ++i) oss << '-'; 
+            oss << '\n';
+
+        }
+        return oss.str();
+    } else if (FeedDisplayCount >= maxTweets && FeedDisplayCount <= maxTweets + 4) {
+        // Case 2: FeedDisplayCount is between maxTweets and maxTweets + 4
+        // Do not modify FeedDisplayCount, but limit the display to maxTweets
+    } else if (FeedDisplayCount < maxTweets && FeedDisplayCount > 0) {
+        // Case 3: FeedDisplayCount is between 0 and maxTweets
+        // FeedDisplayCount remains as is
+    } else if (FeedDisplayCount <= 0) {
+        // Case 4: FeedDisplayCount is less than zero
         
-        loged_in = false;
-        delete this->_user_id;
-        this->_user_id = nullptr;
-        break;
-
-      default:
-        error = "\nIvalid Input Entered [eg. 2]\n";
-        break;
+        if(FeedDisplayCount != 0) error = "\nYou Are Already Not Displaying Any Tweets.\n";
+        FeedDisplayCount = 0;
+        return "";
     }
-  }
-  
-  startPage();
+
+    int32_t displayCount = std::min(FeedDisplayCount, maxTweets);
+
+    std::ostringstream oss;
+    for (int32_t i = 0; i < displayCount; ++i) {
+        oss << feed[i] << "\n";
+        for(int i = 0; i < 100; ++i) oss << '-'; 
+        oss << '\n';
+    }
+
+    return oss.str();
 }
