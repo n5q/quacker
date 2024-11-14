@@ -50,6 +50,8 @@ private:
    */
   void signupPage();
 
+  void searchPage();
+
   /**
    * @brief Validates a phone number string and returns its numeric value.
    *
