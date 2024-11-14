@@ -119,7 +119,7 @@ bool Pond::addReply(const int32_t& user_id, const int32_t& reply_quack_id, const
   bool reply_added = false;
 
   const char* query =
-    "INSERT INTO quacks (tid, writer_id, text, tdate, ttime, replyto_tid) "
+    "INSERT INTO tweets (tid, writer_id, text, tdate, ttime, replyto_tid) "
     "VALUES (?, ?, ?, ?, ?, ?)";
 
   // Prepare the SQL statement.
@@ -430,7 +430,7 @@ bool Pond::reply(const int32_t& user_id, const int32_t& reply_quack_id, const st
   bool reply_added = false;
 
   const char* query =
-    "INSERT INTO quacks (tid, writer_id, text, tdate, ttime, replyto_tid) "
+    "INSERT INTO tweets (tid, writer_id, text, tdate, ttime, replyto_tid) "
     "VALUES (?, ?, ?, ?, ?, ?)";
 
   // Prepare the SQL statement.
@@ -457,6 +457,35 @@ bool Pond::reply(const int32_t& user_id, const int32_t& reply_quack_id, const st
   sqlite3_finalize(stmt);
 
   return reply_added;
+}
+
+bool Pond::requack(const int32_t& user_id, const int32_t& requack_quack_id, const bool spam) {
+  bool requack_added = false;
+
+  const char* query =
+    "INSERT INTO retweets (tid, retweeter_id, rdate, spam) "
+    "VALUES (?, ?, ?, ?)";
+
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+
+  // Bind parameters to prevent SQL injection
+  sqlite3_bind_int(stmt, 1, requack_quack_id);                      // tid
+  sqlite3_bind_int(stmt, 2, user_id);                               // retweeter_id
+  sqlite3_bind_text(stmt, 3, this->_getDate(), -1, SQLITE_STATIC);  // rdate
+  sqlite3_bind_int(stmt, 4, spam);                                  // spam
+
+  // Execute the query.
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    requack_added = true;
+  }
+  sqlite3_finalize(stmt);
+
+  return requack_added;
 }
 
 /**

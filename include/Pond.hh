@@ -190,7 +190,18 @@ public:
     const int32_t& reply_quack_id,
     const std::string& text
   );
-  
+
+  bool requack(
+    const int32_t& user_id,
+    const int32_t& requack_quack_id,
+    const bool spam
+  );
+
+  bool report(
+    const int32_t& user_id,
+    const int32_t& quack_id
+  );
+
   /**
    * @brief Searches for users in the database whose names contain the specified search terms.
    *

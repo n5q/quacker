@@ -281,6 +281,7 @@ void Quacker::userSearchPage() {
   }
 }
 
+
 /**
  * @brief Displays the quack search page and prompts the user to enter a search term.
  *
@@ -309,25 +310,102 @@ void Quacker::quackSearchPage() {
     }
     else {
       std::cout << "Found " << results.size() << " Quacks matching the search term.\n";
+      int i = 1;
       for (const Pond::Quack& result : results) {
-        std::cout << "Quack ID: " << result.tid << ", Writer ID: " << result.writer_id
+        std::cout << i << ". Quack ID: " << result.tid << ", Writer ID: " << result.writer_id
                   << ", Text: " << result.text << ", Date: " << result.date
                   << ", Time: " << result.time << std::endl;
         if (result.replyto_tid != 0) {
           std::cout << "Reply to Quack ID: " << result.replyto_tid << std::endl;
         }
+        ++i;
       }
     }
 
     // Prompt the user to search again or return
-    std::cout << "\nPress Enter to return...";
+    std::cout << "Select a tweet (1,2,3,...) to reply to or press Enter to return...";
     std::string input;
     std::getline(std::cin, input);
     if (input.empty()) {
       continue;
     }
     else {
+      uint32_t selection = std::stoi(input)-1;
+      if (selection <= results.size()) {
+        this->quackMenu(*(this->_user_id), results[selection]);
+      }
       break;
+    }
+  }
+}
+
+void Quacker::replyMenu(const int32_t& user_id, const Pond::Quack& reply) {
+  std::string error = "";
+  while (true) {
+    std::system("clear");
+    std::cout << QUACKER_BANNER;
+    std::cout << "\nReplying to user" << reply.writer_id << "'s Quack:\n" << reply.text << "\n\n" << error << "\n\n";
+
+    std::string reply_text;
+    std::cout << "Enter your reply or press Enter to cancel: ";
+    std::getline(std::cin, reply_text);
+    if (reply_text.empty()) return;
+    if (pond.addReply(user_id, reply.tid, reply_text)) {
+      std::cout << "Reply posted successfully!\n";
+      std::cout << "Press Enter to return...";
+      std::string input;
+      std::getline(std::cin, input);
+      if (input.empty()) {
+        return;
+      }
+    }
+    else {
+      error = "Error posting reply, please try again.";
+    }
+  }
+}
+
+void Quacker::quackMenu(const int32_t& user_id, const Pond::Quack& reply) {
+  std::string error = "";
+  while (true) {
+    std::system("clear");
+    char select;
+    std::cout << QUACKER_BANNER;
+    std::cout << "\nActions for user" << reply.writer_id << "'s Quack:\n" << reply.text << "\n\n" << error <<
+      "\n\n1. Reply"
+      "\n2. Requack"
+      "\n3. Return"
+      "\n\nSelection: ";
+    std::cin >> select;
+    if (std::cin.peek() != '\n') select = '0';
+    // Consume any trailing '\n' and discard it
+    { std::string dummy; std::getline(std::cin, dummy); }
+    switch (select) {
+      case '1':
+        error = "";
+        this->replyMenu(user_id, reply);
+        break;
+      case '2':
+        error = "";
+        if (pond.requack(user_id, reply.tid, false)) {
+          std::cout << "Requack successful!\n";
+          std::cout << "Press Enter to return...";
+          std::string input;
+          std::getline(std::cin, input);
+          if (input.empty()) {
+            return;
+          }
+        }
+        else {
+          error = "Error requacking, please try again.";
+        }
+        break;
+      case '3':
+        error = "";
+        return;
+      default:
+        error = "\nInvalid Input Entered [use: 1, 2, 3].\n";
+        break;
     }
   }
 }

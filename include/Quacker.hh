@@ -47,6 +47,7 @@ private:
    */
   void signupPage();
 
+  
   void mainPage();
 
   /**
@@ -65,6 +66,10 @@ private:
    */
   void quackSearchPage();
 
+  void replyMenu(const int32_t& user_id, const Pond::Quack& reply);
+  
+  void quackMenu(const int32_t& user_id, const Pond::Quack& reply);
+  
   std::string processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error);
 
   /**
