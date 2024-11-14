@@ -119,7 +119,7 @@ bool Pond::addReply(const int32_t& user_id, const int32_t& reply_quack_id, const
   bool reply_added = false;
 
   const char* query =
-    "INSERT INTO quacks (tid, writer_id, text, tdate, ttime, replyto_tid) "
+    "INSERT INTO tweets (tid, writer_id, text, tdate, ttime, replyto_tid) "
     "VALUES (?, ?, ?, ?, ?, ?)";
 
   // Prepare the SQL statement.
@@ -428,6 +428,68 @@ bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
   return unfollowed;
 }
 
+bool Pond::reply(const int32_t& user_id, const int32_t& reply_quack_id, const std::string& text) {
+  bool reply_added = false;
+
+  const char* query =
+    "INSERT INTO tweets (tid, writer_id, text, tdate, ttime, replyto_tid) "
+    "VALUES (?, ?, ?, ?, ?, ?)";
+
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+
+  int32_t new_tid = -1; // TODO: get id from moussas function
+
+  // Bind parameters to prevent SQL injection
+  sqlite3_bind_int(stmt,  1, new_tid);                               // tid;
+  sqlite3_bind_int(stmt,  2, user_id);                               // writer_id
+  sqlite3_bind_text(stmt, 3, text.c_str(), -1, SQLITE_STATIC);       // text
+  sqlite3_bind_text(stmt, 4, this->_getDate(), -1, SQLITE_STATIC);   // tdate
+  sqlite3_bind_text(stmt, 5, this->_getTime(), -1, SQLITE_STATIC);   // ttime
+  sqlite3_bind_int(stmt,  6, reply_quack_id);                        // replyto_tid
+
+  // Execute the query.
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    reply_added = true;
+  }
+  sqlite3_finalize(stmt);
+
+  return reply_added;
+}
+
+bool Pond::requack(const int32_t& user_id, const int32_t& requack_quack_id, const bool spam) {
+  bool requack_added = false;
+
+  const char* query =
+    "INSERT INTO retweets (tid, retweeter_id, rdate, spam) "
+    "VALUES (?, ?, ?, ?)";
+
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+
+  // Bind parameters to prevent SQL injection
+  sqlite3_bind_int(stmt, 1, requack_quack_id);                      // tid
+  sqlite3_bind_int(stmt, 2, user_id);                               // retweeter_id
+  sqlite3_bind_text(stmt, 3, this->_getDate(), -1, SQLITE_STATIC);  // rdate
+  sqlite3_bind_int(stmt, 4, spam);                                  // spam
+
+  // Execute the query.
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    requack_added = true;
+  }
+  sqlite3_finalize(stmt);
+
+  return requack_added;
+}
+
 /**
  * @brief Searches for users in the database whose names contain the specified search terms.
  *
@@ -479,11 +541,11 @@ std::vector<Pond::Quack> Pond::searchForQuacks(const std::string& search_terms) 
   std::vector<Pond::Quack> results;
   std::unordered_set<int32_t> quack_ids; // keep track of unique quack ids across searches
 
-  // Split the keyword input into individual keywords
+  // Split the keyword input into individual keywords, using commas as delimiters
   std::istringstream iss(search_terms);
   std::vector<std::string> keywords;
   std::string keyword;
-  while (iss >> keyword) {
+  while (std::getline(iss, keyword, ',')) { // specify comma as delimiter
     keywords.push_back(keyword);
   }
 
