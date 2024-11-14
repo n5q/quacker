@@ -11,7 +11,7 @@ int main() {
     }
 
     // Test searchForUsers
-    std::string user_search_term = "John"; // Example search term
+    std::string user_search_term = "Jo"; // Example search term
     std::cout << "Testing searchForUsers with term: " << user_search_term << std::endl;
     auto user_results = pond.searchForUsers(user_search_term);
     std::cout << "Found " << user_results.size() << " users matching the search term." << std::endl;
@@ -20,7 +20,7 @@ int main() {
     }
 
     // Test searchForTweets
-    std::string tweet_search_term = "#Database"; // Example search term (can be hashtag or keyword)
+    std::string tweet_search_term = "#Databas"; // Example search term (can be hashtag or keyword)
     std::cout << "Testing searchForTweets with term: " << tweet_search_term << std::endl;
     auto tweet_results = pond.searchForTweets(tweet_search_term);
     std::cout << "Found " << tweet_results.size() << " tweets matching the search term." << std::endl;

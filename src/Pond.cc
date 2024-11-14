@@ -385,7 +385,7 @@ std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std
     "SELECT usr, name "
     "FROM users "
     // lower for case insensitive search
-    "WHERE LOWER(name) LIKE LOWER(?)";
+    "WHERE LOWER(name) LIKE '% ' || LOWER(?) || ' %'";
 
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -394,8 +394,7 @@ std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std
   }
 
   // Bind parameters to prevent SQL injection.
-  std::string search_pattern = "%" + search_terms + "%";
-  sqlite3_bind_text(stmt, 1, search_pattern.c_str(), -1, SQLITE_STATIC); // name
+  sqlite3_bind_text(stmt, 1, search_terms.c_str(), -1, SQLITE_STATIC); // name
 
   // Execute the query.
   while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -431,7 +430,7 @@ std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) 
     "SELECT t.tid, t.writer_id, t.text, t.tdate, t.ttime, t.replyto_tid "
     "FROM tweets t "
     "JOIN hashtag_mentions ht ON t.tid = ht.tid "
-    "WHERE LOWER(ht.term) LIKE LOWER(?) "
+    "WHERE LOWER(ht.term) LIKE LOWER(?)"
     "ORDER BY t.tdate DESC, t.ttime DESC";
 
   // Prepare to query 
@@ -439,14 +438,13 @@ std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) 
   for (const std::string& kw : keywords) {
     if (kw[0] == '#') {
       // std::string hashtag = kw.substr(1);  // remove # prefix
-      std::string hashtag = kw + "%";
 
       if (sqlite3_prepare_v2(this->_db, hashtag_query, -1, &stmt, nullptr) != SQLITE_OK) {
         sqlite3_finalize(stmt);
         continue;
       }
 
-      sqlite3_bind_text(stmt, 1, hashtag.c_str(), -1, SQLITE_STATIC);
+      sqlite3_bind_text(stmt, 1, kw.c_str(), -1, SQLITE_STATIC);
 
       // Retrieve results
       while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -471,16 +469,18 @@ std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) 
       const char* text_query =
         "SELECT tid, writer_id, text, tdate, ttime, replyto_tid "
         "FROM tweets "
-        "WHERE LOWER(text) LIKE LOWER(?) "
+        "WHERE LOWER(text) LIKE '% ' || LOWER(?) || ' %' "
+        "OR LOWER(text) LIKE '% ' || LOWER(?) || ' %' "
         "ORDER BY tdate DESC, ttime DESC";
-      std::string keyword_pattern = "%" + kw + "%";
 
       if (sqlite3_prepare_v2(this->_db, text_query, -1, &stmt, nullptr) != SQLITE_OK) {
         sqlite3_finalize(stmt);
         continue;
       }
 
-      sqlite3_bind_text(stmt, 1, keyword_pattern.c_str(), -1, SQLITE_STATIC);
+      // std::string kw_ht = "#"+kw;
+      sqlite3_bind_text(stmt, 1, kw.c_str(), -1, SQLITE_STATIC);
+      sqlite3_bind_text(stmt, 2, ("#"+kw).c_str(), -1, SQLITE_STATIC);
 
       // Retrieve results
       while (sqlite3_step(stmt) == SQLITE_ROW) {
