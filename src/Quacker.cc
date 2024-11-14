@@ -277,7 +277,6 @@ std::string Quacker::trim(const std::string& str) {
   return (start < end) ? std::string(start, end) : std::string();
 }
 
-
 void Quacker::mainPage() {
   std::string error = "";
   int32_t FeedDisplayCount = 5;
