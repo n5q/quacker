@@ -286,7 +286,8 @@ void Quacker::mainPage() {
     std::string username = pond.getUsername(*(this->_user_id));
 
     char select;
-    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n\n--- Your Feed ---\n" << processFeed(*(this->_user_id), FeedDisplayCount, error);
+    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n\n-------------------------------------------- Your Feed --------------------------------------------\n\n";
+    std::cout << processFeed(*(this->_user_id), FeedDisplayCount, error);
     std::cout << "\n" << error << "\n\n1. See More Of My Feed\n2. See Less Of My Feed\n3. Do Stuff\n4. Exit\n\nSelection: ";
     std::cin >> select;
     if (std::cin.peek() != '\n') select = '0';
@@ -325,20 +326,20 @@ void Quacker::mainPage() {
 }
 
 std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error) {
-    // Retrieve the full feed for the user
     std::vector<std::string> feed = pond.getFeed(user_id);
 
-    // Determine the total number of tweets available
     int32_t maxTweets = feed.size();
 
-    // Check for different conditions based on FeedDisplayCount
     if (FeedDisplayCount >= maxTweets + 5) {
         // Case 1: FeedDisplayCount is 5 or more beyond the available tweets
         error = "\nYou Have No More Tweets Left To Display\n";
-        FeedDisplayCount = std::max(0, static_cast<int>(FeedDisplayCount) - 5);  // Decrement FeedDisplayCount by 5
+        FeedDisplayCount = std::max(0, static_cast<int>(FeedDisplayCount) - 5);
         std::ostringstream oss;
         for (int32_t i = 0; i < maxTweets; ++i) {
-            oss << feed[i] << "\n";  // Concatenate each tweet with a newline separator
+            oss << feed[i] << "\n";
+            for(int i = 0; i < 100; ++i) oss << '-'; 
+            oss << '\n';
+
         }
         return oss.str();
     } else if (FeedDisplayCount >= maxTweets && FeedDisplayCount <= maxTweets + 4) {
@@ -352,16 +353,16 @@ std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDispl
         
         if(FeedDisplayCount != 0) error = "\nYou Are Already Not Displaying Any Tweets\n";
         FeedDisplayCount = 0;
-        return "";  // Return an empty string
+        return "";
     }
 
-    // Determine the number of tweets to display
     int32_t displayCount = std::min(FeedDisplayCount, maxTweets);
 
-    // Create the output string based on displayCount
     std::ostringstream oss;
     for (int32_t i = 0; i < displayCount; ++i) {
-        oss << feed[i] << "\n";  // Concatenate each tweet with a newline separator
+        oss << feed[i] << "\n";
+        for(int i = 0; i < 100; ++i) oss << '-'; 
+        oss << '\n';
     }
 
     return oss.str();
