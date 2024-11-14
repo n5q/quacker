@@ -378,14 +378,14 @@ bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
  * @param search_terms The terms to search for in user names.
  * @return A vector of pairs containing user IDs and names that match the search terms.
  */
-std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std::string& search_terms) {
-  std::vector<std::pair<std::int32_t, std::string>> results;
+std::vector<Pond::User> Pond::searchForUsers(const std::string& search_terms) {
+  std::vector<Pond::User> results;
 
   const char* query =
     "SELECT usr, name "
     "FROM users "
     // lower for case insensitive search
-    "WHERE LOWER(name) LIKE '% ' || LOWER(?) || ' %'";
+    "WHERE LOWER(name) LIKE '%' || LOWER(?) || '%'";
 
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -400,7 +400,10 @@ std::vector<std::pair<std::int32_t, std::string>> Pond::searchForUsers(const std
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     int32_t id_result = sqlite3_column_int(stmt, 0);
     std::string name_result = (const char*)sqlite3_column_text(stmt, 1);
-    results.push_back(std::make_pair(id_result, name_result));
+    Pond::User user;
+    user.usr = id_result;
+    user.name = name_result;
+    results.push_back(user);
   }
 
   sqlite3_finalize(stmt);
@@ -452,7 +455,7 @@ std::vector<Pond::Tweet> Pond::searchForTweets(const std::string& search_terms) 
       while (sqlite3_step(stmt) == SQLITE_ROW) {
         int32_t tweet_id = sqlite3_column_int(stmt, 0);
         if (tweet_ids.find(tweet_id) == tweet_ids.end()) {
-          Tweet tweet;
+          Pond::Tweet tweet;
           tweet.tid = tweet_id;
           tweet.writer_id = sqlite3_column_int(stmt, 1);
           tweet.text = (const char*)(sqlite3_column_text(stmt, 2));

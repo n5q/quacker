@@ -123,7 +123,7 @@ void Quacker::loginPage() {
  *       and `pond.addUser` to add the new user to the database.
  */
 void Quacker::signupPage() {
-  std::string description = "Enter your details or press Enter to return.";
+  std::string description = "Enter your details or press Enter to return...";
   while (true) {
     // Clear the screen and show the sign-up interface
     std::system("clear");
@@ -178,6 +178,103 @@ void Quacker::signupPage() {
     }
   }
 }
+
+/*
+  * @brief Displays the user search page and prompts the user to enter a search term.
+  *
+  * The search term should be a portion of a user's name. The search results
+  * are displayed to the user 5 at a time, showing matching users.
+*/
+void Quacker::userSearchPage() {
+  std::string description = "Search for a user or press Enter to return.";
+  while (true) {
+    // show search interface
+    std::system("clear");
+    std::cout << QUACKER_BANNER << "\n" << description << "\n\n--- User Search ---\n";
+
+    std::string search_term;
+    std::cout << "Search for user name: ";
+    std::getline(std::cin, search_term);
+    search_term = trim(search_term);
+    if (search_term.empty()) return;
+
+    // query
+    std::vector<Pond::User> results = pond.searchForUsers(search_term);
+
+    // display results
+    if (results.empty()) {
+      std::cout << "No users found matching the search term.\n";
+    } else {
+      std::cout << "Found " << results.size() << " users matching the search term.\n";
+      for (const Pond::User& result : results) {
+        std::cout << "User ID: " << result.usr << ", Name: " << result.name << std::endl;
+      }
+    }
+
+    // Prompt the user to search again or return
+    std::cout << "\nPress Enter to return...";
+    std::string input;
+    std::getline(std::cin, input);
+    if (input.empty()) {
+      continue;
+    }
+    else {
+      break;
+    }
+  }
+}
+
+/*
+  * @brief Displays the tweet search page and prompts the user to enter a search term.
+  *
+  * The search term should be a keyword or a hashtag prefixed with '#'. The search results
+  * are displayed to the user 5 at a time, showing matching users.
+*/
+void Quacker::quackSearchPage() {
+  std::string description = "Search for a keyword or hashtag, or press Enter to return...";
+  while (true) {
+    // show search interface
+    std::system("clear");
+    std::cout << QUACKER_BANNER << "\n" << description << "\n\n--- Quack Search ---\n";
+
+    std::string search_term;
+    std::cout << "Search for a quack: ";
+    std::getline(std::cin, search_term);
+    search_term = trim(search_term);
+    if (search_term.empty()) return;
+
+    // query
+    std::vector<Pond::Tweet> results = pond.searchForTweets(search_term);
+
+    // display results
+    if (results.empty()) {
+      std::cout << "No quacks found matching the search term.\n";
+    }
+    else {
+      std::cout << "Found " << results.size() << " quacks matching the search term.\n";
+      for (const Pond::Tweet& result : results) {
+        std::cout << "Quack ID: " << result.tid << ", Writer ID: " << result.writer_id
+                  << ", Text: " << result.text << ", Date: " << result.date
+                  << ", Time: " << result.time << std::endl;
+        if (result.replyto_tid != 0) {
+          std::cout << "Reply to Quack ID: " << result.replyto_tid << std::endl;
+        }
+      }
+    }
+
+    // Prompt the user to search again or return
+    std::cout << "\nPress Enter to return...";
+    std::string input;
+    std::getline(std::cin, input);
+    if (input.empty()) {
+      continue;
+    }
+    else {
+      break;
+    }
+  }
+}
+
 
 /**
  * @brief Validates a phone number string and returns its numeric value.
@@ -283,16 +380,22 @@ void Quacker::mainPage() {
     std::string username = pond.getUsername(*(this->_user_id));
 
     char select;
-    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n" << error << "\n1. Do stuff\n2. Do more stuff\n3. Exit\n\nSelection: ";
+    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n" << error <<
+      "\n1. Search for users"
+      "\n2. Search for quacks"
+      "\n3. Exit"
+      "\n\nSelection: ";
     std::cin >> select;
     // Consume any trailing '\n' and discard it
     { std::string dummy; std::getline(std::cin, dummy); }
     switch (select) {
       case '1':
-        error = "";
+        this->userSearchPage();
+        // error = "";
         break;
       case '2':
-        error = "";
+        this->quackSearchPage();
+        // error = "";
         break;
       case '3':
         std::system("clear");

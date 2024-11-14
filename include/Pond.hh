@@ -132,8 +132,13 @@ public:
     const std::string& search_terms
   );
 
-  
-  std::vector<std::pair<std::int32_t, std::string>> searchForUsers(
+  struct User {
+    int32_t usr;
+    std::string name;
+  };
+  // typedef std::vector<std::pair<std::int32_t, std::string>> User;
+
+  std::vector<User> searchForUsers(
     const std::string& search_terms
   );
 

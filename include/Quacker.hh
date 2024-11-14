@@ -50,7 +50,8 @@ private:
    */
   void signupPage();
 
-  void searchPage();
+  void userSearchPage();
+  void quackSearchPage();
 
   /**
    * @brief Validates a phone number string and returns its numeric value.
