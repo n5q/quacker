@@ -129,7 +129,7 @@ bool Pond::addReply(const int32_t& user_id, const int32_t& reply_quack_id, const
     return false;
   }
 
-  int32_t new_tid = 1; // Temporary ._. Fix LTR
+  int32_t new_tid = Pond::getUnqiueQuackID();
 
   // Bind parameters to prevent SQL injection
   sqlite3_bind_int(stmt, 1, new_tid);                                // tid;
@@ -383,7 +383,6 @@ bool Pond::follow(const int32_t& user_id, const int32_t& follow_id) {
   sqlite3_bind_int(stmt, 1, user_id);                               // follower_id
   sqlite3_bind_int(stmt, 2, follow_id);                             // followee_id
   sqlite3_bind_text(stmt, 3, this->_getDate(), -1, SQLITE_STATIC);  // start_date
-
 
   // Execute the query.
   if (sqlite3_step(stmt) == SQLITE_DONE) {
@@ -696,7 +695,7 @@ char* Pond::_getTime() {
   std::tm* gmt = std::gmtime(&rn);
 
   char* t = new char[9];
-  std::strftime(t, sizeof(t), "%H:%M:%S", gmt);
+  std::strftime(t, 9, "%H:%M:%S", gmt);
 
   return t;
 }
@@ -712,7 +711,7 @@ char* Pond::_getDate() {
 
   char* t = new char[11];
   // yyyy-mm-dd
-  std::strftime(t, sizeof(t), "%F", gmt);
+  std::strftime(t, 11, "%F", gmt);
 
   return t;
 }
