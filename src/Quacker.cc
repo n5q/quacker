@@ -250,7 +250,7 @@ void Quacker::mainPage() {
               }
 
               int32_t selection = std::stoi(input)-1;
-              if (selection > static_cast<int32_t>(i-2) || selection < static_cast<int32_t>(i-7)) {
+              if (selection > static_cast<int32_t>(i-2) || selection < static_cast<int32_t>(i-6)) {
                   std::cout << "\033[A\033[2K" << std::flush;
                   std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return... ";
                   std::getline(std::cin, input);
