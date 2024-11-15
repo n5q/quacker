@@ -192,7 +192,7 @@ void Quacker::mainPage() {
     int32_t i = 1;
     char select;
     std::cout << QUACKER_BANNER << "\nWelcome back, " << username 
-    << "!\n\n-------------------------------------------- Your Feed ---------------------------------------------\n";
+    << "! (User Id: " << *(this->_user_id) << ")\n\n-------------------------------------------- Your Feed ---------------------------------------------\n";
     std::cout << processFeed(*(this->_user_id), FeedDisplayCount, error, i);
     std::cout << "\n" << error << "\n\n1. See More Of My Feed\n"
                                       "2. See Less Of My Feed\n"
