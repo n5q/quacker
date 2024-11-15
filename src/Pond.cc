@@ -348,7 +348,7 @@ std::vector<std::string> Pond::getFeed(const int32_t& user_id) {
         oss << std::string(66 - oss.str().length(), ' '); 
         oss << "Date and Time: " <<(date ? reinterpret_cast<const char*>(date) : "Unknown")
             << " " << (time ? reinterpret_cast<const char*>(time) : "Unknown") << "\n\n";
-        oss << "Text: " <<(text ? formatTweetText(reinterpret_cast<const char*>(text), 80) : "") << "\n";
+        oss << "Text: " <<(text ? formatTweetText(reinterpret_cast<const char*>(text), 94) : "") << "\n";
 
         feed.push_back(oss.str());
     }
@@ -757,3 +757,38 @@ std::string Pond::formatTweetText(const std::string& text, int lineWidth) {
 
     return formattedText.str();
 }
+
+/**
+ * @brief Retrieves a quack from the database using its unique ID.
+ *
+ * @param quack_id The unique ID of the quack to retrieve.
+ * @return A Pond::Quack struct containing the quack's information.
+ */
+Pond::Quack Pond::getQuackFromID(const int32_t& quack_id) {
+  Pond::Quack quack;
+
+  const char* query =
+    "SELECT tid, writer_id, text, tdate, ttime, replyto_tid "
+    "FROM tweets "
+    "WHERE tid = ?";
+
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return quack;
+  }
+
+  sqlite3_bind_int(stmt, 1, quack_id);
+
+  if (sqlite3_step(stmt) == SQLITE_ROW) {
+    quack.tid = sqlite3_column_int(stmt, 0);
+    quack.writer_id = sqlite3_column_int(stmt, 1);
+    quack.text = (const char*)sqlite3_column_text(stmt, 2);
+    quack.date = (const char*)sqlite3_column_text(stmt, 3);
+    quack.time = (const char*)sqlite3_column_text(stmt, 4);
+    quack.replyto_tid = sqlite3_column_int(stmt, 5);
+  }
+
+  sqlite3_finalize(stmt);
+  return quack;
+  }

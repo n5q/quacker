@@ -233,6 +233,8 @@ public:
    */
   bool getUniqueUserID(int32_t& unique_id);
 
+  Pond::Quack getQuackFromID(const int32_t& quack_id);
+
 private:
   sqlite3* _db;
 

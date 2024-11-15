@@ -125,7 +125,7 @@ void Quacker::loginPage() {
  *       and `pond.addUser` to add the new user to the database.
  */
 void Quacker::signupPage() {
-  std::string description = "Enter your details or press Enter to return...";
+  std::string description = "Enter your details or press Enter to return... ";
   while (true) {
     // Clear the screen and show the sign-up interface
     std::system("clear");
@@ -170,7 +170,7 @@ void Quacker::signupPage() {
     // If the user is successfully added, assign the new user ID to _user_id and notify the user
     if (new_user_id != nullptr) {
       this->_user_id = new_user_id;
-      std::cout << "Account created! Press Enter to log in...\n";
+      std::cout << "Account created! Press Enter to log in... ";
       std::cin.get();
       logged_in = true;
       mainPage();
@@ -189,14 +189,16 @@ void Quacker::mainPage() {
     
     std::string username = pond.getUsername(*(this->_user_id));
 
+    int32_t i = 1;
     char select;
     std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n\n-------------------------------------------- Your Feed ---------------------------------------------\n";
-    std::cout << processFeed(*(this->_user_id), FeedDisplayCount, error);
+    std::cout << processFeed(*(this->_user_id), FeedDisplayCount, error, i);
     std::cout << "\n" << error << "\n\n1. See More Of My Feed\n"
                                       "2. See Less Of My Feed\n"
                                       "3. Search For Users\n"
-                                      "4. Search for Quacks\n"
-                                      "5. Log Out\n"
+                                      "4. Search For Quacks\n"
+                                      "5. Reply/Retweet From Feed\n"
+                                      "6. Log Out\n"
                                       "Selection: ";
     std::cin >> select;
     if (std::cin.peek() != '\n') select = '0';
@@ -219,7 +221,48 @@ void Quacker::mainPage() {
         this->quackSearchPage();
         error = "";
         break;
-      case '5':
+      case '5': {
+          std::cout << "\nSelect a tweet (1,2,3,...) to reply/retweet or press Enter to return... ";
+          std::string input;
+          std::getline(std::cin, input);
+          if (input.empty()) {
+            break;
+          }
+          else {
+            bool validInput = false;
+            while(!validInput){
+              std::regex positive_integer_regex("^[1-9]\\d*$");
+              if (!std::regex_match(input, positive_integer_regex)) {
+                  std::cout << "\033[A\033[2K" << std::flush;
+                  std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return... ";
+                  std::getline(std::cin, input);
+                  if (input.empty()) {
+                    break;
+                  }
+                  continue;
+              }
+
+              uint32_t selection = std::stoi(input)-1;
+              if (selection > static_cast<uint32_t>(i-2)) {
+                  std::cout << "\033[A\033[2K" << std::flush;
+                  std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return... ";
+                  std::getline(std::cin, input);
+                  if (input.empty()) {
+                    break;
+                  }
+                  continue;
+              }
+              validInput = true;
+
+              if (validInput) {
+                this->quackMenu(*(this->_user_id), pond.getQuackFromID(this->feedTIDS[selection]));
+              }
+              break;
+            }
+            break;
+          }
+        }
+      case '6':
         std::system("clear");
         FeedDisplayCount = 5;
         error = "";
@@ -228,7 +271,7 @@ void Quacker::mainPage() {
         this->_user_id = nullptr;
         break;
       default:
-        error = "\nInvalid Input Entered [use: 1, 2, 3, 4, 5].\n";
+        error = "\nInvalid Input Entered [use: 1, 2, 3, 4, 5, 6].\n";
         break;
     }
   }
@@ -271,12 +314,12 @@ void Quacker::userSearchPage() {
     }
 
     // Prompt the user to search again or return
-    std::cout << "\nPress Enter to return...";
+    std::cout << "\nPress Enter to return... ";
     std::string input;
     std::getline(std::cin, input);
     while (!input.empty()) {
       std::cout << "\033[A\033[2K" << std::flush;
-      std::cout << "Input Is Invalid: Press Enter to return...";
+      std::cout << "Input Is Invalid: Press Enter to return... ";
       std::getline(std::cin, input);
     }
   }
@@ -290,7 +333,7 @@ void Quacker::userSearchPage() {
  * are displayed to the user 5 at a time, showing matching users.
  */
 void Quacker::quackSearchPage() {
-  std::string description = "Search for a keyword or hashtag, or press Enter to return...";
+  std::string description = "Search for a keyword or hashtag, or press Enter to return... ";
   while (true) {
     // show search interface
     std::system("clear");
@@ -310,12 +353,12 @@ void Quacker::quackSearchPage() {
     if (results.empty()) {
       std::cout << "No Quacks found matching the search term.\n";
       std::cout << '\n' << '\n';
-      std::cout << "Press Enter to return...";
+      std::cout << "Press Enter to return... ";
       std::string input;
       std::getline(std::cin, input);
       while (!input.empty()) {
         std::cout << "\033[A\033[2K" << std::flush;
-        std::cout << "Input Is Invalid: Press Enter to return...";
+        std::cout << "Input Is Invalid: Press Enter to return... ";
         std::getline(std::cin, input);
       }
     }
@@ -329,13 +372,14 @@ void Quacker::quackSearchPage() {
       
       for (const Pond::Quack& result : results) {
         std::ostringstream oss;
-
-        oss << i << ". Quack ID: " << result.tid;
+        
+        oss << i << ".\n";
+        oss << "Quack ID: " << result.tid;
         oss << ", Author: " << ((pond.getUsername(result.writer_id) != "") ? pond.getUsername(result.writer_id) : "Unknown");
-        oss << std::string(66 - oss.str().length(), ' ');
+        oss << std::string(69 - oss.str().length(), ' ');
         oss << "Date and Time: " << (result.date.empty() ? "Unknown" : result.date);
         oss << " " << (result.time.empty() ? "Unknown" : result.time) << "\n\n";
-        oss << "Text: " << formatTweetText(result.text, 80) << "\n";
+        oss << "Text: " << formatTweetText(result.text, 94) << "\n";
         // if (result.replyto_tid != 0) {
         //     oss << "Reply to Quack ID: " << result.replyto_tid << "\n";
         // }
@@ -349,7 +393,7 @@ void Quacker::quackSearchPage() {
       std::cout << '\n';
 
       // Prompt the user to search again or return
-      std::cout << "Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return...";
+      std::cout << "Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return... ";
       std::string input;
       std::getline(std::cin, input);
       if (input.empty()) {
@@ -361,7 +405,7 @@ void Quacker::quackSearchPage() {
           std::regex positive_integer_regex("^[1-9]\\d*$");
           if (!std::regex_match(input, positive_integer_regex)) {
               std::cout << "\033[A\033[2K" << std::flush;
-              std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return...";
+              std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return... ";
               std::getline(std::cin, input);
               if (input.empty()) {
                 break;
@@ -372,7 +416,7 @@ void Quacker::quackSearchPage() {
           uint32_t selection = std::stoi(input)-1;
           if (selection > i-2) {
               std::cout << "\033[A\033[2K" << std::flush;
-              std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return...";
+              std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return... ";
               std::getline(std::cin, input);
               if (input.empty()) {
                 break;
@@ -404,7 +448,7 @@ void Quacker::replyMenu(const int32_t& user_id, const Pond::Quack& reply) {
     if (reply_text.empty()) return;
     if (pond.addReply(user_id, reply.tid, reply_text)) {
       std::cout << "Reply posted successfully!\n";
-      std::cout << "Press Enter to return...";
+      std::cout << "Press Enter to return... ";
       std::string input;
       std::getline(std::cin, input);
       if (input.empty()) {
@@ -441,7 +485,7 @@ void Quacker::quackMenu(const int32_t& user_id, const Pond::Quack& reply) {
         error = "";
         if (pond.requack(user_id, reply.tid, false)) {
           std::cout << "Requack successful!\n";
-          std::cout << "Press Enter to return...";
+          std::cout << "Press Enter to return... ";
           std::string input;
           std::getline(std::cin, input);
           if (input.empty()) {
@@ -556,21 +600,25 @@ std::string Quacker::trim(const std::string& str) {
   return (start < end) ? std::string(start, end) : std::string();
 }
 
-std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error) {
+std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error, int32_t& i) {
     std::vector<std::string> feed = pond.getFeed(user_id);
 
     int32_t maxQuacks = feed.size();
-
+    i = 1;
+    this->feedTIDS.clear();
     if (FeedDisplayCount >= maxQuacks + 5) {
         // Case 1: FeedDisplayCount is 5 or more beyond the available quacks
         error = "\nYou Have No More Quacks Left To Display.\n";
         FeedDisplayCount = std::max(0, static_cast<int>(FeedDisplayCount) - 5);
         std::ostringstream oss;
-        for (int32_t i = 0; i < maxQuacks; ++i) {
-            oss << feed[i] << "\n";
+        while(i-1 < maxQuacks) {
+            oss << i << ".\n";
+            oss << feed[i-1] << "\n";
             for(int i = 0; i < 100; ++i) oss << '-'; 
             oss << '\n';
 
+            this->feedTIDS.push_back(extractQuackId(feed[i-1]));
+            ++i;
         }
         return oss.str();
     } else if (FeedDisplayCount >= maxQuacks && FeedDisplayCount <= maxQuacks + 4) {
@@ -590,10 +638,14 @@ std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDispl
     int32_t displayCount = std::min(FeedDisplayCount, maxQuacks);
 
     std::ostringstream oss;
-    for (int32_t i = 0; i < displayCount; ++i) {
-        oss << feed[i] << "\n";
+    while(i-1 < displayCount) {
+        oss << i << ".\n";
+        oss << feed[i-1] << "\n";
         for(int i = 0; i < 100; ++i) oss << '-'; 
         oss << '\n';
+
+        this->feedTIDS.push_back(extractQuackId(feed[i-1]));
+        ++i;
     }
 
     return oss.str();
@@ -621,4 +673,23 @@ std::string Quacker::formatTweetText(const std::string& text, int lineWidth) {
     }
 
     return formattedText.str();
+}
+
+int32_t Quacker::extractQuackId(const std::string& quackString) {
+    const std::string prefix = "Quack Id: ";
+    
+    if (quackString.find(prefix) == 0) {
+        std::regex pattern(R"(^Quack Id:\s+(\d+))");
+        std::smatch match;
+
+        if (std::regex_search(quackString, match, pattern)) {
+            return static_cast<int32_t>(std::stoi(match[1].str()));
+        } else {
+            std::cerr << "Error: No valid integer found after 'Quack Id: '" << std::endl;
+            return -1;
+        }
+    } else {
+        std::cerr << "Error: String does not start with 'Quack Id: '" << std::endl;
+        return -1;
+    }
 }
