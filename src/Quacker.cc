@@ -66,6 +66,41 @@ void Quacker::startPage() {
   }
 }
 
+std::string Quacker::getHiddenPassword() {
+  struct termios oldt, newt;
+  std::string password;
+  char ch;
+
+  // save old terminal settings and disable echo
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ECHO); // disable echo
+  newt.c_lflag &= ~(ICANON); // disable canonical mode 
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+  while (true) {
+    ch = getchar();
+    if (ch == '\n') { 
+      std::cout << std::endl;
+      break;
+    }
+    else if (ch == 127 || ch == '\b') { // backspace
+      if (!password.empty()) {
+        password.pop_back();
+        std::cout << "\b \b"; 
+      }
+    }
+    else {
+      password.push_back(ch);
+      std::cout << '*'; 
+    }
+  }
+
+  // restore old terminal settings
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  return password;
+}
+
 /**
  * @brief Displays the login page and prompts the user for credentials.
  * 
@@ -102,7 +137,8 @@ void Quacker::loginPage() {
 
     // Ask for the password
     std::cout << "Password: ";
-    std::getline(std::cin, password);
+    password = this->getHiddenPassword();
+    // std::getline(std::cin, password);
 
     // Check login credentials
     this->_user_id = pond.checkLogin(user_id, password);
