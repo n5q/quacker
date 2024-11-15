@@ -844,32 +844,32 @@ Pond::Quack Pond::getQuackFromID(const int32_t& quack_id) {
   return quack;
 }
 
-std::vector<int32_t> Pond::getFollowers(const int32_t& user_id) {
-  std::vector<int32_t> results;
+// std::vector<int32_t> Pond::getFollowers(const int32_t& user_id) {
+//   std::vector<int32_t> results;
 
-  const char* query =
-    "SELECT flwer "
-    "FROM follows "
-    "WHERE flwee = ?";
+//   const char* query =
+//     "SELECT flwer "
+//     "FROM follows "
+//     "WHERE flwee = ?";
 
-  sqlite3_stmt* stmt;
-  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
-    sqlite3_finalize(stmt);
-    return results;
-  }
+//   sqlite3_stmt* stmt;
+//   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+//     sqlite3_finalize(stmt);
+//     return results;
+//   }
 
-  sqlite3_bind_int(stmt, 1, user_id);
+//   sqlite3_bind_int(stmt, 1, user_id);
 
-  while (sqlite3_step(stmt) == SQLITE_ROW) {
-    results.push_back(sqlite3_column_int(stmt, 0));
-  }
+//   while (sqlite3_step(stmt) == SQLITE_ROW) {
+//     results.push_back(sqlite3_column_int(stmt, 0));
+//   }
 
-  sqlite3_finalize(stmt);
+//   sqlite3_finalize(stmt);
   
-  return results;
-}
+//   return results;
+// }
 
-std::vector<Pond::User> Pond::getFollowers_v2(const int32_t& user_id) {
+std::vector<Pond::User> Pond::getFollowers(const int32_t& user_id) {
   std::vector<Pond::User> results;
 
   const char* query =

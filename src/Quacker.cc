@@ -793,7 +793,7 @@ void Quacker::followersPage() {
   std::string error = "";
   while (true) {
     std::system("clear");
-    std::vector<Pond::User> flwers = pond.getFollowers_v2(*(this->_user_id));
+    std::vector<Pond::User> flwers = pond.getFollowers(*(this->_user_id));
     std::cout << QUACKER_BANNER;
     std::cout << "\nYour Followers:\n\n";
     for (const Pond::User& flwer : flwers) {
