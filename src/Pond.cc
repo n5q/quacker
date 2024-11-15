@@ -128,7 +128,7 @@ bool Pond::validateQuack(const int32_t& quack_id, const std::string& text) {
  * @param text The text of the quack.
  * @return A pointer to the unique ID of the quack if it was successfully added; nullptr otherwise.
  */
-int32_t* Pond::addPost(const int32_t& user_id, const std::string& text) {
+int32_t* Pond::addQuack(const int32_t& user_id, const std::string& text) {
   int32_t* result = nullptr;
 
   int32_t quack_id;

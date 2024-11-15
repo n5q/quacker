@@ -69,11 +69,15 @@ public:
     const std::string& password
   );
 
-  bool addHashtag(const int32_t &quack_id, const std::string &hashtag);
+  bool addHashtag(
+    const int32_t &quack_id, const std::string &hashtag
+  );
 
-  bool validateQuack(const int32_t &quack_id, const std::string &text);
+  bool validateQuack(
+    const int32_t &quack_id, const std::string &text
+  );
 
-  int32_t* addPost(
+  int32_t* addQuack(
     const int32_t& user_id,
     const std::string& text
   );
@@ -215,12 +219,19 @@ public:
     const int32_t& quack_id
   );
 
-  std::vector<int32_t> getFollowers(const int32_t& user_id);
-  std::vector<int32_t> getFollows(const int32_t& user_id);
+  std::vector<int32_t> getFollowers(
+    const int32_t& user_id
+  );
+
+  std::vector<int32_t> getFollows(
+    const int32_t& user_id
+  );
 
   // int32_t getQuackCount(const int32_t &user_id);
 
-  std::vector<Pond::Quack> getQuacks(const int32_t &user_id);
+  std::vector<Pond::Quack> getQuacks(
+    const int32_t &user_id
+  );
 
 private:
   sqlite3* _db;

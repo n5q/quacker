@@ -308,7 +308,7 @@ void Quacker::postingPage() {
     if (quack_text.empty()) {
       break;
     }
-    if (pond.addPost(*(this->_user_id), quack_text) != nullptr) {
+    if (pond.addQuack(*(this->_user_id), quack_text) != nullptr) {
       std::cout << "Quack posted successfully!\n";
       std::cout << "Press Enter to return... ";
       std::string input;
@@ -320,7 +320,7 @@ void Quacker::postingPage() {
       }
     } 
     else {
-      description = "Error posting quack, please try again.";
+      description = "Error posting Quack, insure there are no duplicate hashtags and try again.";
     }
   }
 }
