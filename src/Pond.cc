@@ -869,6 +869,34 @@ std::vector<int32_t> Pond::getFollowers(const int32_t& user_id) {
   return results;
 }
 
+std::vector<Pond::User> Pond::getFollowers_v2(const int32_t& user_id) {
+  std::vector<Pond::User> results;
+
+  const char* query =
+    "SELECT u.usr, u.name "
+    "FROM follows f "
+    "JOIN users u ON f.flwer = u.usr "
+    "WHERE f.flwee = ?";
+
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return results;
+  }
+
+  sqlite3_bind_int(stmt, 1, user_id);
+
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    Pond::User user;
+    user.usr = sqlite3_column_int(stmt, 0); 
+    user.name = (const char*)(sqlite3_column_text(stmt, 1)); 
+    results.push_back(user);
+  }
+
+  sqlite3_finalize(stmt);
+  return results;
+}
+
 std::vector<int32_t> Pond::getFollows(const int32_t& user_id) {
   std::vector<int32_t> results;
 

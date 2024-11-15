@@ -308,6 +308,7 @@ void Quacker::mainPage() {
         }
       
       case '6':
+        this->followersPage();
       break;
 
       case '7':
@@ -792,7 +793,26 @@ void Quacker::followersPage() {
   std::string error = "";
   while (true) {
     std::system("clear");
-    std::vector<int32_t> flwers = pond.getFollowers(*(this->_user_id));
+    std::vector<Pond::User> flwers = pond.getFollowers_v2(*(this->_user_id));
+    std::cout << QUACKER_BANNER;
+    std::cout << "\nYour Followers:\n\n";
+    for (const Pond::User& flwer : flwers) {
+      std::ostringstream oss;
+      oss << "----------------------------------------------------------------------------------------------------\n";
+      oss << "  User ID: " << std::setw(40) << std::left << flwer.usr
+          << "Name: " << flwer.name << "\n";
+      std::cout << oss.str();
+    }
+    std::cout << "----------------------------------------------------------------------------------------------------\n\n";
+    std::cout << "Press Enter to return... ";
+    std::string input;
+    std::getline(std::cin, input);
+    while (!input.empty()) {
+      std::cout << "\033[A\033[2K" << std::flush;
+      std::cout << "Input Is Invalid: Press Enter to return... ";
+      std::getline(std::cin, input);
+    }
+    break;
   }
 }
 
