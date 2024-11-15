@@ -69,53 +69,107 @@ int32_t* Pond::addUser(const std::string& name, const std::string& email, const 
   return result;  // Return either the pointer to user_id or nullptr
 }
 
-/**
- * @brief Adds a new post to the posts table in the database.
- *
- * @param quack_id The unique ID of the quack.
- * @param user_id The ID of the user who created the post.
- * @param text The text content of the post.
- * @return true if the post was successfully added; false otherwise.
- */
-bool Pond::addPost(const int32_t& quack_id, const int32_t& user_id, const std::string& text) {
-  bool post_added = false;
-
-  const char* query =
-    "INSERT INTO posts (tid, writer_id, text, tdate, ttime) "
-    "VALUES (?, ?, ?, ?, ?)";
-
-  // Prepare the SQL statement.
+bool Pond::addHashtag(const int32_t& quack_id, const std::string& hashtag) {
+  const char *query =
+      "INSERT INTO hashtag_mentions (tid, term) "
+      "SELECT ?, ? "
+      "WHERE NOT EXISTS ("
+      "  SELECT 1 FROM hashtag_mentions "
+      "  WHERE tid = ? AND term = ? COLLATE NOCASE"
+      ")";
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
     return false;
   }
 
+  // Bind parameters to prevent SQL injection
+  sqlite3_bind_int(stmt, 1, quack_id);                          // tid
+  sqlite3_bind_text(stmt, 2, hashtag.c_str(), -1, SQLITE_STATIC); // term
+
+  // Execute the query.
+  bool added = sqlite3_step(stmt) == SQLITE_DONE;
+  sqlite3_finalize(stmt);
+
+  return added;
+}
+
+bool Pond::validateQuack(const int32_t& quack_id, const std::string& text) {
+  // Check if the text is empty
+  if (text.empty()) {
+    return false;
+  }
+
+  // One tweet can have multiple hashtags but not multiple instances of the same hashtag
+  std::unordered_set<std::string> hashtags;
+  std::istringstream iss(text);
+  std::string word;
+  while (iss >> word) {
+    if (word[0] == '#') {
+
+      std::string hashtag = word;
+      std::transform(hashtag.begin(), hashtag.end(), hashtag.begin(), ::tolower);
+
+      if (hashtags.find(hashtag) != hashtags.end()) {
+        return false;
+      }
+      hashtags.insert(hashtag);
+      this->addHashtag(quack_id, hashtag);
+    }
+  }
+
+  return true;
+}
+
+/**
+ * @brief Adds a new quack to the database.
+ *
+ * @param user_id The ID of the user who is posting the quack.
+ * @param text The text of the quack.
+ * @return A pointer to the unique ID of the quack if it was successfully added; nullptr otherwise.
+ */
+int32_t* Pond::addPost(const int32_t& user_id, const std::string& text) {
+  int32_t* result = nullptr;
+
+  int32_t quack_id;
+  if (!this->getUniqueQuackID(quack_id)) {
+    return result;
+  }
+
+  if (!validateQuack(quack_id, text)) {
+    return result;
+  }
+
+  const char* query =
+    "INSERT INTO tweets (tid, writer_id, text, tdate, ttime) "
+    "VALUES (?, ?, ?, ?, ?)";
+
+  // Prepare the SQL statement.
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return result;
+  }
+
   // Bind parameters to prevent SQL injection.
-  sqlite3_bind_int(stmt, 1, quack_id);                              // tid
-  sqlite3_bind_int(stmt, 2, user_id);                               // writer_id
+  sqlite3_bind_int(stmt, 1, quack_id);                               // tid
+  sqlite3_bind_int(stmt, 2, user_id);                                // writer_id
   sqlite3_bind_text(stmt, 3, text.c_str(), -1, SQLITE_STATIC);       // text
   sqlite3_bind_text(stmt, 4, this->_getDate(), -1, SQLITE_STATIC);   // tdate
   sqlite3_bind_text(stmt, 5, this->_getTime(), -1, SQLITE_STATIC);   // ttime
 
   // Execute the query.
-  if (sqlite3_step(stmt) == SQLITE_ROW) {
-    post_added = true;
+  if (sqlite3_step(stmt) == SQLITE_DONE) {
+    result = new int32_t(quack_id);
   }
   sqlite3_finalize(stmt);
 
-  return post_added;
+  return result;
 }
 
-/**
- * @brief Adds a reply quack to the quacks table in the database.
- *
- * @param user_id The ID of the user creating the reply.
- * @param reply_quack_id The ID of the quack being replied to.
- * @param text The text content of the reply.
- * @return true if the reply was successfully added; false otherwise.
- */
 int32_t* Pond::addReply(const int32_t& user_id, const int32_t& reply_quack_id, const std::string& text) {
+  int32_t* result = nullptr;
+
   const char* query =
     "INSERT INTO tweets (tid, writer_id, text, tdate, ttime, replyto_tid) "
     "VALUES (?, ?, ?, ?, ?, ?)";
@@ -124,12 +178,12 @@ int32_t* Pond::addReply(const int32_t& user_id, const int32_t& reply_quack_id, c
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return nullptr;
+    return result;
   }
 
   int32_t reply_tid;
   if (!getUniqueQuackID(reply_tid)) {
-    return nullptr;  // Return nullptr if we couldn't get a unique ID
+    return result;  // Return nullptr if we couldn't get a unique ID
   }
 
   // Bind parameters to prevent SQL injection
@@ -137,12 +191,10 @@ int32_t* Pond::addReply(const int32_t& user_id, const int32_t& reply_quack_id, c
   sqlite3_bind_int(stmt, 2, user_id);                                // writer_id
   sqlite3_bind_text(stmt, 3, text.c_str(), -1, SQLITE_STATIC);       // text
   sqlite3_bind_text(stmt, 4, this->_getDate(), -1, SQLITE_STATIC);   // tdate
-  sqlite3_bind_text(stmt, 5, this->_getDate(), -1, SQLITE_STATIC);   // ttime
+  sqlite3_bind_text(stmt, 5, this->_getTime(), -1, SQLITE_STATIC);   // ttime
   sqlite3_bind_int(stmt, 6, reply_quack_id);                         // replyto_tid
 
-  int32_t* result = nullptr;
   // Execute the query.
-
   if (sqlite3_step(stmt) == SQLITE_DONE) {
     result = new int32_t(reply_tid);
   }
@@ -352,7 +404,7 @@ bool Pond::addRequack(const int32_t& user_id, const int32_t& quack_id, const boo
   sqlite3_bind_int(stmt, 1, quack_id);                                    // tid
   sqlite3_bind_int(stmt, 2, user_id);                                     // retweeter_id
   sqlite3_bind_int(stmt, 3, this->getQuackFromID(quack_id).writer_id);    // writer_id
-  sqlite3_bind_text(stmt, 3, this->_getDate(), -1, SQLITE_STATIC);        // rdate <-- THIS DOESNT WORK
+  sqlite3_bind_text(stmt, 3, this->_getDate(), -1, SQLITE_STATIC);        // rdate
   sqlite3_bind_int(stmt, 4, spam);                                        // spam
 
   // Execute the query.
@@ -578,7 +630,7 @@ std::vector<std::string> Pond::getFeed(const int32_t& user_id) {
  */
 std::string Pond::getUsername(const int32_t& user_id) {
   std::string username;
-
+  
   const char* query =
     "SELECT name "
     "FROM users "
@@ -641,7 +693,7 @@ Pond::Quack Pond::getQuackFromID(const int32_t& quack_id) {
 }
 
 std::vector<int32_t> Pond::getFollowers(const int32_t& user_id) {
-  std::vector<int32_t> flwers;
+  std::vector<int32_t> results;
 
   const char* query =
     "SELECT * "
@@ -651,17 +703,76 @@ std::vector<int32_t> Pond::getFollowers(const int32_t& user_id) {
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
     sqlite3_finalize(stmt);
-    return flwers;
+    return results;
   }
 
   sqlite3_bind_int(stmt, 1, user_id);
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-    flwers.push_back(sqlite3_column_int(stmt, 0));
+    results.push_back(sqlite3_column_int(stmt, 0));
   }
 
   sqlite3_finalize(stmt);
-  return flwers;
+  
+  return results;
+}
+
+std::vector<int32_t> Pond::getFollows(const int32_t& user_id) {
+  std::vector<int32_t> results;
+
+  const char* query =
+  "SELECT * "
+  "FROM follows "
+  "WHERE flwer = ?";
+
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return results;
+  }
+
+  sqlite3_bind_int(stmt, 1, user_id);
+
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    results.push_back(sqlite3_column_int(stmt, 0));
+  }
+
+  sqlite3_finalize(stmt);
+
+  return results;
+}
+
+std::vector<Pond::Quack> Pond::getQuacks(const int32_t& user_id) {
+  std::vector<Pond::Quack> results;
+
+  const char* query =
+    "SELECT tid, writer_id, text, tdate, ttime, replyto_tid "
+    "FROM tweets "
+    "WHERE writer_id = ? "
+    "ORDER BY tdate DESC, ttime DESC";
+
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return results;
+  }
+
+  sqlite3_bind_int(stmt, 1, user_id);
+
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    Pond::Quack quack;
+    quack.tid =  sqlite3_column_int(stmt, 0);
+    quack.writer_id = sqlite3_column_int(stmt, 1);
+    quack.text = (const char*)(sqlite3_column_text(stmt, 2));
+    quack.date = (const char*)(sqlite3_column_text(stmt, 3));
+    quack.time = (const char*)(sqlite3_column_text(stmt, 4));
+    quack.replyto_tid = sqlite3_column_int(stmt, 5);
+
+    results.push_back(quack);
+  }
+
+  sqlite3_finalize(stmt);
+  return results;
 }
 
 /**

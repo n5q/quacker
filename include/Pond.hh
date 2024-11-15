@@ -8,6 +8,7 @@
 #include <ctime>
 #include <unordered_set>
 #include <sstream>
+#include <algorithm>
 
 #include "definitions.hh"
 
@@ -68,17 +69,12 @@ public:
     const std::string& password
   );
 
-  /**
-  * @brief Adds a new post to the posts table in the database.
-  *
-  * @param quack_id The unique ID of the quack.
-  * @param user_id The ID of the user who created the post.
-  * @param text The text content of the post.
-  * @return true if the post was successfully added; false otherwise.
-  */
-  bool addPost(
-    const int32_t& quack_id,
-    const std::int32_t& user_id,
+  bool addHashtag(const int32_t &quack_id, const std::string &hashtag);
+
+  bool validateQuack(const int32_t &quack_id, const std::string &text);
+
+  int32_t* addPost(
+    const int32_t& user_id,
     const std::string& text
   );
 
@@ -91,7 +87,7 @@ public:
   * @return true if the reply was successfully added; false otherwise.
   */
   int32_t* addReply(
-    const std::int32_t& user_id,
+    const int32_t& user_id,
     const int32_t& reply_quack_id,
     const std::string& text
   );
@@ -100,18 +96,6 @@ public:
     const int32_t& user_id,
     const int32_t& quack_id,
     const bool spam
-  );
-
-  /**
-   * @brief Creates a new list for a user in the database.
-   *
-   * @param user_id The ID of the user who owns the list.
-   * @param list_name The name of the new list.
-   * @return true if the list was successfully created; false otherwise.
-   */
-  bool createList(
-    const std::int32_t& user_id,
-    const std::string& list_name
   );
 
   /**
@@ -124,8 +108,20 @@ public:
    */
   bool addToList(
     const std::string& list_name,
-    const std::int32_t& quack_id,
-    const std::int32_t& user_id
+    const int32_t& quack_id,
+    const int32_t& user_id
+  );
+  
+  /**
+   * @brief Creates a new list for a user in the database.
+   *
+   * @param user_id The ID of the user who owns the list.
+   * @param list_name The name of the new list.
+   * @return true if the list was successfully created; false otherwise.
+   */
+  bool createList(
+    const int32_t& user_id,
+    const std::string& list_name
   );
 
   /**
@@ -217,6 +213,11 @@ public:
   );
 
   std::vector<int32_t> getFollowers(const int32_t& user_id);
+  std::vector<int32_t> getFollows(const int32_t& user_id);
+
+  // int32_t getQuackCount(const int32_t &user_id);
+
+  std::vector<Pond::Quack> getQuacks(const int32_t &user_id);
 
 private:
   sqlite3* _db;
@@ -265,7 +266,7 @@ private:
    */
   bool _listExists(
     const std::string& list_name,
-    const std::int32_t& user_id
+    const int32_t& user_id
   );
 
   std::string formatTweetText(const std::string& text, int lineWidth);

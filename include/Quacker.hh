@@ -32,7 +32,7 @@ public:
 private:
   void startPage();
 
-  std::vector<int32_t> feedTIDS;
+  std::vector<int32_t> feed_quack_ids;
 
   /**
    * @brief Displays the login page and prompts the user for credentials.
@@ -53,6 +53,7 @@ private:
   
   void mainPage();
 
+  void postingPage();
   /**
    * @brief Displays the user search page and prompts the user to enter a search term.
    *
@@ -72,9 +73,10 @@ private:
   void quackPage(const int32_t& user_id, const Pond::Quack& reply);
 
   void replyPage(const int32_t& user_id, const Pond::Quack& reply);
-  
 
-  void followPage();
+  void followersPage();
+  
+  void userPage(const int32_t& user_id, const Pond::User& user);
   
   std::string processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error, int32_t& i);
 
