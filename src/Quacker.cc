@@ -197,7 +197,8 @@ void Quacker::signupPage() {
 
     // Get and validate the password
     std::cout << "Enter Password: ";
-    std::getline(std::cin, password);
+    password = this->getHiddenPassword();
+    // std::getline(std::cin, password);
     if (password.empty()) return;
 
     // Add user to the database
