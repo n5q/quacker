@@ -24,7 +24,28 @@ Design Document - CMPUT 291 Mini Project 1\\}
 
 % a)
 \section{Overview and User Guide}
-quack quack
+	\subsection*{Running the Application}
+
+	\begin{enumerate}
+		\item \textbf{Compile the Application:} \\
+		Use the provided \texttt{Makefile} to compile the code by running:
+		\begin{verbatim}
+		make
+		\end{verbatim}
+
+		\item \textbf{Start the Application:} \\
+		Execute the application with a database filename:
+		\begin{verbatim}
+		build/quacker <database_filename>
+		\end{verbatim}
+		\textit{Example:}
+		\begin{verbatim}
+		build/quacker test/prj-sample.db
+		\end{verbatim}
+
+		\item \textbf{Interacting with the Application:} \\
+		Upon launch, the application displays the main start page, providing options for interacting with Quacker .
+	\end{enumerate}
 \newpage
 
 % b)
@@ -47,5 +68,5 @@ We dont need to test our software because we are better
 
 % d)
 \section{Group Work Breakdown}
-We give all credit to Allah SWT, all success comes from Him alone.
+
 \end{document}
