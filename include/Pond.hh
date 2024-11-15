@@ -92,11 +92,10 @@ public:
     const std::string& text
   );
 
-  bool addRequack(
-    const int32_t& user_id,
-    const int32_t& quack_id,
-    const bool spam
-  );
+  int32_t addRequack(
+      const int32_t &user_id,
+      const int32_t &quack_id
+    );
 
   /**
    * @brief Adds a quack to a list in the database.
@@ -192,6 +191,10 @@ public:
     const int32_t& user_id
   );
 
+  uint32_t getRequackCount(const int32_t& quack_id);
+  
+  std::vector<int32_t> getReplies(const int32_t& quack_id);
+  
   /**
    * @brief Retrieves the username associated with a given user ID from the database.
    *

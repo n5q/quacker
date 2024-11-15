@@ -76,7 +76,7 @@ private:
 
   void followersPage();
   
-  void userPage(const int32_t& user_id, const Pond::User& user);
+  void userPage(const Pond::User& user);
   
   std::string processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error, int32_t& i);
 

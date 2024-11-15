@@ -105,7 +105,7 @@ bool Pond::validateQuack(const int32_t& quack_id, const std::string& text) {
   std::istringstream iss(text);
   std::string word;
   while (iss >> word) {
-    if (word[0] == '#') {
+    if (word[0] == '#' && word.size() > 1) {
 
       std::string hashtag = word;
       std::transform(hashtag.begin(), hashtag.end(), hashtag.begin(), ::tolower);
@@ -386,35 +386,132 @@ bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
   return unfollowed;
 }
 
-bool Pond::addRequack(const int32_t& user_id, const int32_t& quack_id, const bool spam) {
-  bool requack_added = false;
+int32_t Pond::addRequack(const int32_t &user_id, const int32_t &quack_id) {
+  int32_t requack_status = -1;
 
-  const char* query =
-    "INSERT INTO retweets (tid, retweeter_id, writer_id, rdate, spam) "
-    "VALUES (?, ?, ?, ?)";
+  // Check if the user has already requacked this quack
+  const char *check_query =
+      "SELECT COUNT(*) FROM retweets WHERE tid = ? AND retweeter_id = ?";
 
-  // Prepare the SQL statement.
-  sqlite3_stmt* stmt;
-  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
-    sqlite3_finalize(stmt);
-    return false;
+  sqlite3_stmt *check_stmt;
+  if (sqlite3_prepare_v2(this->_db, check_query, -1, &check_stmt, nullptr) != SQLITE_OK) {
+    std::cerr << "SQL Error (prepare check): " << sqlite3_errmsg(this->_db) << std::endl;
+    return 3;
   }
 
-  // Bind parameters to prevent SQL injection
-  sqlite3_bind_int(stmt, 1, quack_id);                                    // tid
-  sqlite3_bind_int(stmt, 2, user_id);                                     // retweeter_id
-  sqlite3_bind_int(stmt, 3, this->getQuackFromID(quack_id).writer_id);    // writer_id
-  sqlite3_bind_text(stmt, 3, this->_getDate(), -1, SQLITE_STATIC);        // rdate
-  sqlite3_bind_int(stmt, 4, spam);                                        // spam
-
-  // Execute the query.
-  if (sqlite3_step(stmt) == SQLITE_DONE) {
-    requack_added = true;
+  if (sqlite3_bind_int(check_stmt, 1, quack_id) != SQLITE_OK ||
+      sqlite3_bind_int(check_stmt, 2, user_id) != SQLITE_OK) {
+    std::cerr << "SQL Error (bind check): " << sqlite3_errmsg(this->_db) << std::endl;
+    sqlite3_finalize(check_stmt);
+    return 3;
   }
-  sqlite3_finalize(stmt);
 
-  return requack_added;
+  int already_requacked = 0;
+  if (sqlite3_step(check_stmt) == SQLITE_ROW) {
+    already_requacked = sqlite3_column_int(check_stmt, 0);
+  }
+  else {
+    std::cerr << "SQL Error (step check): " << sqlite3_errmsg(this->_db) << std::endl;
+    sqlite3_finalize(check_stmt);
+    return 3;
+  }
+
+  sqlite3_finalize(check_stmt);
+
+  if (already_requacked > 0) {
+    // User has already requacked; update the existing entry to mark as spam
+    const char *update_query =
+        "UPDATE retweets SET spam = 1 WHERE tid = ? AND retweeter_id = ?";
+
+    sqlite3_stmt *update_stmt;
+    if (sqlite3_prepare_v2(this->_db, update_query, -1, &update_stmt, nullptr) != SQLITE_OK) {
+      std::cerr << "SQL Error (prepare update): " << sqlite3_errmsg(this->_db) << std::endl;
+      return 3;
+    }
+
+    if (sqlite3_bind_int(update_stmt, 1, quack_id) != SQLITE_OK ||
+        sqlite3_bind_int(update_stmt, 2, user_id) != SQLITE_OK) {
+      std::cerr << "SQL Error (bind update): " << sqlite3_errmsg(this->_db) << std::endl;
+      sqlite3_finalize(update_stmt);
+      return 3;
+    }
+
+    if (sqlite3_step(update_stmt) != SQLITE_DONE) {
+      std::cerr << "SQL Error (step update): " << sqlite3_errmsg(this->_db) << std::endl;
+    }
+    else {
+      requack_status = 1; // Status indicating spam update
+    }
+
+    sqlite3_finalize(update_stmt);
+    return requack_status;
+  }
+
+  // Proceed to insert the requack as a new entry
+  const char *insert_query =
+      "INSERT INTO retweets (tid, retweeter_id, writer_id, rdate, spam) "
+      "VALUES (?, ?, ?, ?, ?)";
+
+  sqlite3_stmt *insert_stmt;
+  if (sqlite3_prepare_v2(this->_db, insert_query, -1, &insert_stmt, nullptr) != SQLITE_OK) {
+    std::cerr << "SQL Error (prepare insert): " << sqlite3_errmsg(this->_db) << std::endl;
+    return 3;
+  }
+
+  if (sqlite3_bind_int(insert_stmt, 1, quack_id) != SQLITE_OK ||
+      sqlite3_bind_int(insert_stmt, 2, user_id) != SQLITE_OK ||
+      sqlite3_bind_int(insert_stmt, 3, this->getQuackFromID(quack_id).writer_id) != SQLITE_OK ||
+      sqlite3_bind_text(insert_stmt, 4, this->_getDate(), -1, SQLITE_STATIC) != SQLITE_OK ||
+      sqlite3_bind_int(insert_stmt, 5, 0) != SQLITE_OK) { // No spam for new requack
+    std::cerr << "SQL Error (bind insert): " << sqlite3_errmsg(this->_db) << std::endl;
+    sqlite3_finalize(insert_stmt);
+    return 3;
+  }
+
+  if (sqlite3_step(insert_stmt) != SQLITE_DONE) {
+    std::cerr << "SQL Error (step insert): " << sqlite3_errmsg(this->_db) << std::endl;
+  }
+  else {
+    requack_status = 0; // Status indicating new requack added
+  }
+
+  sqlite3_finalize(insert_stmt);
+  return requack_status;
 }
+
+// int32_t Pond::addRequack(const int32_t &user_id, const int32_t &quack_id, const bool spam) {
+//   int32_t requack_added = -1;
+
+//   const char *query =
+//       "INSERT INTO retweets (tid, retweeter_id, writer_id, rdate, spam) "
+//       "VALUES (?, ?, ?, ?, ?)";
+
+//   sqlite3_stmt *stmt;
+//   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+//     std::cerr << "SQL Error (prepare): " << sqlite3_errmsg(this->_db) << std::endl;
+//     return 3;
+//   }
+
+//   if (sqlite3_bind_int(stmt, 1, quack_id) != SQLITE_OK ||
+//       sqlite3_bind_int(stmt, 2, user_id) != SQLITE_OK ||
+//       sqlite3_bind_int(stmt, 3, this->getQuackFromID(quack_id).writer_id) != SQLITE_OK ||
+//       sqlite3_bind_text(stmt, 4, this->_getDate(), -1, SQLITE_STATIC) != SQLITE_OK ||
+//       sqlite3_bind_int(stmt, 5, spam) != SQLITE_OK) {
+//     std::cerr << "SQL Error (bind): " << sqlite3_errmsg(this->_db) << std::endl;
+//     sqlite3_finalize(stmt);
+//     return 3;
+//   }
+
+//   if (sqlite3_step(stmt) != SQLITE_DONE) {
+//     std::cerr << "SQL Error (step): " << sqlite3_errmsg(this->_db) << std::endl;
+//   }
+//   else {
+//     requack_added = 0;
+//   }
+
+//   sqlite3_finalize(stmt);
+//   return requack_added;
+// }
 
 /**
  * @brief Searches for users in the database whose names contain the specified search terms.
@@ -480,6 +577,7 @@ std::vector<Pond::Quack> Pond::searchForQuacks(const std::string& search_terms) 
     "WHERE LOWER(ht.term) LIKE LOWER(?)"
     "ORDER BY t.tdate DESC, t.ttime DESC";
 
+
   // Prepare to query 
   sqlite3_stmt* stmt;
   for (const std::string& kw : keywords) {
@@ -513,7 +611,7 @@ std::vector<Pond::Quack> Pond::searchForQuacks(const std::string& search_terms) 
     }
 
     else { // text keyword
-      const char* text_query =
+      const char *text_query =
         "SELECT tid, writer_id, text, tdate, ttime, replyto_tid "
         "FROM tweets "
         "WHERE LOWER(text) LIKE '% ' || LOWER(?) || ' %' "
@@ -522,8 +620,9 @@ std::vector<Pond::Quack> Pond::searchForQuacks(const std::string& search_terms) 
         "OR LOWER(text) LIKE '% ' || LOWER(?) "
         "OR LOWER(text) LIKE LOWER(?) || ' %' "
         "OR LOWER(text) LIKE LOWER(?) || ' %' "
+        "OR LOWER(text) = LOWER(?)"
+        "OR LOWER(text) = LOWER(?)"
         "ORDER BY tdate DESC, ttime DESC";
-
 
       if (sqlite3_prepare_v2(this->_db, text_query, -1, &stmt, nullptr) != SQLITE_OK) {
         sqlite3_finalize(stmt);
@@ -537,6 +636,8 @@ std::vector<Pond::Quack> Pond::searchForQuacks(const std::string& search_terms) 
       sqlite3_bind_text(stmt, 4, ("#"+kw).c_str(), -1, SQLITE_STATIC);
       sqlite3_bind_text(stmt, 5, kw.c_str(), -1, SQLITE_STATIC);
       sqlite3_bind_text(stmt, 6, ("#"+kw).c_str(), -1, SQLITE_STATIC);
+      sqlite3_bind_text(stmt, 7, kw.c_str(), -1, SQLITE_STATIC);
+      sqlite3_bind_text(stmt, 8, ("#" + kw).c_str(), -1, SQLITE_STATIC);
 
       // Retrieve results
       while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -615,6 +716,56 @@ std::vector<std::string> Pond::getFeed(const int32_t& user_id) {
     sqlite3_finalize(stmt);
 
     return feed;
+}
+
+uint32_t Pond::getRequackCount(const int32_t& quack_id) {
+  uint32_t requack_count = 0;
+
+  const char *query =
+    "SELECT COUNT(tid) "
+    "FROM retweets "
+    "WHERE tid = ?";
+
+  sqlite3_stmt *stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return requack_count;
+  }
+
+  sqlite3_bind_int(stmt, 1, quack_id);
+
+  if (sqlite3_step(stmt) == SQLITE_ROW) {
+    requack_count = sqlite3_column_int(stmt, 0);
+  }
+
+  sqlite3_finalize(stmt);
+
+  return requack_count;
+}
+
+std::vector<int32_t> Pond::getReplies(const int32_t& quack_id) {
+  std::vector<int32_t> results;
+
+  const char* query =
+    "SELECT tid "
+    "FROM tweets "
+    "WHERE replyto_tid = ?";
+
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return results;
+  }
+
+  sqlite3_bind_int(stmt, 1, quack_id);
+
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    results.push_back(sqlite3_column_int(stmt, 0));
+  }
+
+  sqlite3_finalize(stmt);
+  
+  return results;
 }
 
 /**
@@ -696,7 +847,7 @@ std::vector<int32_t> Pond::getFollowers(const int32_t& user_id) {
   std::vector<int32_t> results;
 
   const char* query =
-    "SELECT * "
+    "SELECT flwer "
     "FROM follows "
     "WHERE flwee = ?";
 
@@ -721,7 +872,7 @@ std::vector<int32_t> Pond::getFollows(const int32_t& user_id) {
   std::vector<int32_t> results;
 
   const char* query =
-  "SELECT * "
+  "SELECT flwee "
   "FROM follows "
   "WHERE flwer = ?";
 

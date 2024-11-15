@@ -191,7 +191,8 @@ void Quacker::mainPage() {
 
     int32_t i = 1;
     char select;
-    std::cout << QUACKER_BANNER << "\nWelcome back, " << username << "!\n\n-------------------------------------------- Your Feed ---------------------------------------------\n";
+    std::cout << QUACKER_BANNER << "\nWelcome back, " << username 
+    << "!\n\n-------------------------------------------- Your Feed ---------------------------------------------\n";
     std::cout << processFeed(*(this->_user_id), FeedDisplayCount, error, i);
     std::cout << "\n" << error << "\n\n1. See More Of My Feed\n"
                                       "2. See Less Of My Feed\n"
@@ -349,6 +350,15 @@ void Quacker::searchUsersPage() {
     // display results
     if (results.empty()) {
       std::cout << "No users found matching the search term.\n";
+      std::cout << '\n' << '\n';
+      std::cout << "Press Enter to return... ";
+      std::string input;
+      std::getline(std::cin, input);
+      while (!input.empty()) {
+        std::cout << "\033[A\033[2K" << std::flush;
+        std::cout << "Input Is Invalid: Press Enter to return... ";
+        std::getline(std::cin, input);
+      }
     } else {
       uint32_t i = 1;
 
@@ -399,7 +409,7 @@ void Quacker::searchUsersPage() {
         valid_input = true;
         
         if (selection <= results.size()) {
-          this->userPage(*(this->_user_id), results[selection]);
+          this->userPage(results[selection]);
         }
         break;
       }  
@@ -408,7 +418,8 @@ void Quacker::searchUsersPage() {
   }
 }
 
- void Quacker::userPage(const int32_t& user_id, const Pond::User& user) {
+ void Quacker::userPage(const Pond::User& user) {
+  int32_t user_id = *(this->_user_id);
   std::string error = "";
   int32_t hardstop = 3;
   while (true) {
@@ -476,12 +487,13 @@ void Quacker::searchUsersPage() {
         }
         hardstop -= 3;
         break;
-      case '3':
+      case '3': 
         {
           error = "";
-          for (int32_t flwer : pond.getFollowers(user.usr)) {
-            if (flwer == user_id || user_id == user.usr) { 
-              if (flwer == user_id) std::cout << "You already follow " << user.name << "\n";
+          bool already_follows = false;
+          for (int32_t flws : pond.getFollows(user_id)) {
+            if (flws == user.usr || user_id == user.usr) { 
+              if (flws == user.usr) std::cout << "You already follow " << user.name << "\n";
               if (user_id == user.usr) std::cout << "You can't follow yourself " << user.name << "\n";
               std::cout << "Press Enter to return... ";
               std::string input;
@@ -491,10 +503,13 @@ void Quacker::searchUsersPage() {
                 std::cout << "Input Is Invalid: Press Enter to return... ";
                 std::getline(std::cin, input);
               }
+              already_follows = true;
               break;
             }
+          }
+          if (!already_follows) {
             pond.follow(user_id, user.usr);
-            std::cout << "you are now following " << user.name << "\n";
+            std::cout << "You are now following " << user.name << "\n";
             std::cout << "Press Enter to return... ";
             std::string input;
             std::getline(std::cin, input);
@@ -515,7 +530,6 @@ void Quacker::searchUsersPage() {
     }
   }
 }
-
 /**
  * @brief Displays the quack search page and prompts the user to enter a search term.
  *
@@ -641,6 +655,8 @@ void Quacker::replyPage(const int32_t& user_id, const Pond::Quack& reply) {
     oss << "Date and Time: " << (reply.date.empty() ? "Unknown" : reply.date);
     oss << " " << (reply.time.empty() ? "Unknown" : reply.time) << "\n\n";
     oss << "Text: " << formatTweetText(reply.text, 94) << "\n\n";
+    oss << "Requack Count: " << pond.getRequackCount(reply.tid) << "     Reply Count: " << pond.getReplies(reply.tid).size() << "\n\n";
+
     std::cout << oss.str();
     
     for(int i = 0; i < 100; ++i) std::cout << '-';
@@ -683,6 +699,8 @@ void Quacker::quackPage(const int32_t& user_id, const Pond::Quack& reply) {
     oss << "Date and Time: " << (reply.date.empty() ? "Unknown" : reply.date);
     oss << " " << (reply.time.empty() ? "Unknown" : reply.time) << "\n\n";
     oss << "Text: " << formatTweetText(reply.text, 94) << "\n\n";
+    oss << "Requack Count: " << pond.getRequackCount(reply.tid) << "     Reply Count: " << pond.getReplies(reply.tid).size() << "\n\n";
+
     std::cout << oss.str();
     
     for(int i = 0; i < 100; ++i) std::cout << '-';
@@ -701,9 +719,10 @@ void Quacker::quackPage(const int32_t& user_id, const Pond::Quack& reply) {
         error = "";
         this->replyPage(user_id, reply);
         break;
-      case '2':
+      case '2': {
         error = "";
-        if (pond.addRequack(user_id, reply.tid, false)) {
+        int32_t joebiden = pond.addRequack(user_id, reply.tid);
+        if (joebiden == 0) {
           std::cout << "Requack successful!\n";
           std::cout << "Press Enter to return... ";
           std::string input;
@@ -714,10 +733,14 @@ void Quacker::quackPage(const int32_t& user_id, const Pond::Quack& reply) {
             std::getline(std::cin, input);
           }
         }
-        else {
+        else if (joebiden == 1) {
+          error = "\n\nYou've already requacked this, marked as spam...\n";
+        }
+        else{
           error = "\n\nError requacking, please try again.\n";
         }
         break;
+    }
       case '3':
         error = "";
         return;
