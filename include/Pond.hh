@@ -90,18 +90,17 @@ public:
   * @param text The text content of the reply.
   * @return true if the reply was successfully added; false otherwise.
   */
-  bool addReply(
+  int32_t* addReply(
     const std::int32_t& user_id,
     const int32_t& reply_quack_id,
     const std::string& text
   );
 
-  // bool requack(
-  //   const std::int32_t& user_id,
-  //   const int32_t& requack_quack_id,
-  //   const std::string& text
-  //   const bool spam
-  // );
+  bool addRequack(
+    const int32_t& user_id,
+    const int32_t& quack_id,
+    const bool spam
+  );
 
   /**
    * @brief Creates a new list for a user in the database.
@@ -142,26 +141,6 @@ public:
   );
 
   /**
-   * @brief Retrieves the username associated with a given user ID from the database.
-   *
-   * @param user_id The unique identifier of the user whose username is being retrieved.
-   * @return A std::string containing the username if found, otherwise an empty string.
-   */
-  std::string getUsername(
-    const int32_t& user_id
-  );
-
-  /**
-   * @brief Retrieves a feed of quacks and requacks for a given user.
-   *
-   * @param user_id The unique identifier of the user for whom the feed is generated.
-   * @return A vector of strings where each string represents a formatted entry in the feed.
-   */
-  std::vector<std::string> getFeed(
-    const int32_t& user_id
-  );
-
-  /**
    * @brief Adds a follow relationship between two users.
    *
    * @param user_id The ID of the user who is following.
@@ -185,17 +164,6 @@ public:
     const int32_t& follow_id
   );
 
-  bool requack(
-    const int32_t& user_id,
-    const int32_t& requack_quack_id,
-    const bool spam
-  );
-
-  // bool report(
-  //   const int32_t& user_id,
-  //   const int32_t& quack_id
-  // );
-
   /**
    * @brief Searches for users in the database whose names contain the specified search terms.
    *
@@ -205,7 +173,6 @@ public:
   std::vector<Pond::User> searchForUsers(
     const std::string& search_terms
   );
-
 
   /**
    * @brief search for quacks containing specific keywords or hashtags.
@@ -218,8 +185,38 @@ public:
   std::vector<Pond::Quack> searchForQuacks(
     const std::string& search_terms
   );
+  
+  /**
+   * @brief Retrieves a feed of quacks and requacks for a given user.
+   *
+   * @param user_id The unique identifier of the user for whom the feed is generated.
+   * @return A vector of strings where each string represents a formatted entry in the feed.
+   */
+  std::vector<std::string> getFeed(
+    const int32_t& user_id
+  );
 
-  Pond::Quack getQuackFromID(const int32_t& quack_id);
+  /**
+   * @brief Retrieves the username associated with a given user ID from the database.
+   *
+   * @param user_id The unique identifier of the user whose username is being retrieved.
+   * @return A std::string containing the username if found, otherwise an empty string.
+   */
+  std::string getUsername(
+    const int32_t& user_id
+  );
+
+  /**
+   * @brief Retrieves a quack from the database using its unique ID.
+   *
+   * @param quack_id The unique ID of the quack to retrieve.
+   * @return A Pond::Quack struct containing the quack's information.
+   */
+  Pond::Quack getQuackFromID(
+    const int32_t& quack_id
+  );
+
+  std::vector<int32_t> getFollowers(const int32_t& user_id);
 
 private:
   sqlite3* _db;
@@ -230,14 +227,17 @@ private:
    * @param[out] unique_id An integer reference that will be set to a unique user ID.
    * @return `true` if a unique ID is successfully found and assigned; `false` if an error occurs.
    */
-  bool getUniqueUserID(int32_t& unique_id);
+  bool getUniqueUserID(
+    int32_t& unique_id
+  );
 
   /**
    * 
    */
-  bool getUnqiueQuackID(int32_t& unique_id);
+  bool getUniqueQuackID(
+    int32_t& unique_id
+  );
   
-
   /**
   * @brief Retrieves the current time in GMT as a formatted string (HH:MM:SS).
   *

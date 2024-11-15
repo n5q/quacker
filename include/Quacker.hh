@@ -59,7 +59,7 @@ private:
    * The search term should be a portion of a user's name. The search results
    * are displayed to the user 5 at a time, showing matching users.
    */
-  void userSearchPage();
+  void searchUsersPage();
 
   /**
    * @brief Displays the quack search page and prompts the user to enter a search term.
@@ -67,11 +67,14 @@ private:
    * The search term should be a keyword or a hashtag prefixed with '#'. The search results
    * are displayed to the user 5 at a time, showing matching users.
    */
-  void quackSearchPage();
+  void searchQuacksPage();
 
-  void replyMenu(const int32_t& user_id, const Pond::Quack& reply);
+  void quackPage(const int32_t& user_id, const Pond::Quack& reply);
+
+  void replyPage(const int32_t& user_id, const Pond::Quack& reply);
   
-  void quackMenu(const int32_t& user_id, const Pond::Quack& reply);
+
+  void followPage();
   
   std::string processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error, int32_t& i);
 
@@ -119,5 +122,5 @@ private:
   
   std::string formatTweetText(const std::string& text, int lineWidth);
 
-  int32_t extractQuackId(const std::string& quackString);
+  int32_t extractQuackID(const std::string& quackString);
 };
