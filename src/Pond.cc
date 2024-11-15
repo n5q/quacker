@@ -876,7 +876,8 @@ std::vector<Pond::User> Pond::getFollowers(const int32_t& user_id) {
     "SELECT u.usr, u.name "
     "FROM follows f "
     "JOIN users u ON f.flwer = u.usr "
-    "WHERE f.flwee = ?";
+    "WHERE f.flwee = ? "
+    "ORDER BY LENGTH(u.usr)"; // are we sure about this ?
 
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {

@@ -793,28 +793,63 @@ void Quacker::followersPage() {
   std::string error = "";
   while (true) {
     std::system("clear");
-    std::vector<Pond::User> flwers = pond.getFollowers(*(this->_user_id));
+    std::vector<Pond::User> results = pond.getFollowers(*(this->_user_id));
     std::cout << QUACKER_BANNER;
     std::cout << "\nYour Followers:\n\n";
-    for (const Pond::User& flwer : flwers) {
+    uint32_t i = 1;
+    for (const Pond::User& flwer : results) {
       std::ostringstream oss;
       oss << "----------------------------------------------------------------------------------------------------\n";
-      oss << "  User ID: " << std::setw(40) << std::left << flwer.usr
-          << "Name: " << flwer.name << "\n";
+      oss << i << ".   User ID: " << std::setw(40) << std::left << flwer.usr
+        << "Name: " << flwer.name << "\n";
       std::cout << oss.str();
+      ++i;
     }
     std::cout << "----------------------------------------------------------------------------------------------------\n\n";
-    std::cout << "Press Enter to return... ";
+
+    std::cout << "Select a user (1,2,3,...) OR press Enter to return: ";
     std::string input;
     std::getline(std::cin, input);
-    while (!input.empty()) {
-      std::cout << "\033[A\033[2K" << std::flush;
-      std::cout << "Input Is Invalid: Press Enter to return... ";
-      std::getline(std::cin, input);
+
+    if (input.empty()) {
+      return;
     }
-    break;
+
+    bool valid_input = false;
+    while (!valid_input) {
+      std::regex positive_integer_regex("^[1-9]\\d*$");
+      if (!std::regex_match(input, positive_integer_regex)) {
+        std::cout << "\033[A\033[2K" << std::flush;
+        std::cout << "Input Is Invalid: Select a user (1,2,3,...) OR press Enter to return: ";
+        std::getline(std::cin, input);
+
+        if (input.empty()) {
+          return; 
+        }
+        continue;
+      }
+
+      uint32_t selection = std::stoi(input) - 1;
+      if (selection > i - 2) {
+        std::cout << "\033[A\033[2K" << std::flush;
+        std::cout << "Input Is Invalid: Select a user (1,2,3,...) OR press Enter to return: ";
+        std::getline(std::cin, input);
+
+        if (input.empty()) {
+          return; 
+        }
+        continue;
+      }
+      valid_input = true;
+
+      if (selection < results.size()) {
+        this->userPage(results[selection]);
+      }
+      break;
+    }
   }
 }
+
 
 std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error, int32_t& i) {
     std::vector<std::string> feed = pond.getFeed(user_id);
