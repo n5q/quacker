@@ -249,8 +249,8 @@ void Quacker::mainPage() {
                   continue;
               }
 
-              uint32_t selection = std::stoi(input)-1;
-              if (selection > static_cast<uint32_t>(i-2)) {
+              int32_t selection = std::stoi(input)-1;
+              if (selection > static_cast<int32_t>(i-2) || selection < static_cast<int32_t>(i-7)) {
                   std::cout << "\033[A\033[2K" << std::flush;
                   std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return... ";
                   std::getline(std::cin, input);
@@ -771,13 +771,13 @@ std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDispl
         FeedDisplayCount = std::max(0, static_cast<int>(FeedDisplayCount) - 5);
         std::ostringstream oss;
         while(i-1 < maxQuacks) {
-            oss << i << ".\n";
-            oss << feed[i-1] << "\n";
-            for(int i = 0; i < 100; ++i) oss << '-'; 
-            oss << '\n';
-
             this->feed_quack_ids.push_back(extractQuackID(feed[i-1]));
             ++i;
+            if((maxQuacks-5) >= i-1) continue;;
+            oss << i-1 << ".\n";
+            oss << feed[i-2] << "\n";
+            for(int i = 0; i < 100; ++i) oss << '-'; 
+            oss << '\n';
         }
         return oss.str();
     } else if (FeedDisplayCount >= maxQuacks && FeedDisplayCount <= maxQuacks + 4) {
@@ -798,13 +798,13 @@ std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDispl
 
     std::ostringstream oss;
     while(i-1 < displayCount) {
-        oss << i << ".\n";
-        oss << feed[i-1] << "\n";
-        for(int i = 0; i < 100; ++i) oss << '-'; 
-        oss << '\n';
-
         this->feed_quack_ids.push_back(extractQuackID(feed[i-1]));
         ++i;
+        if((displayCount-5) >= i-1) continue;;
+        oss << i-1 << ".\n";
+        oss << feed[i-2] << "\n";
+        for(int i = 0; i < 100; ++i) oss << '-'; 
+        oss << '\n';
     }
 
     return oss.str();
