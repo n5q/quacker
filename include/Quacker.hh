@@ -8,6 +8,7 @@
 #include <sstream>
 #include <algorithm>
 #include <numeric>
+#include <iomanip>
 
 #include "Pond.hh"
 
@@ -30,6 +31,8 @@ public:
   
 private:
   void startPage();
+
+  std::vector<int32_t> feedTIDS;
 
   /**
    * @brief Displays the login page and prompts the user for credentials.
@@ -70,7 +73,7 @@ private:
   
   void quackMenu(const int32_t& user_id, const Pond::Quack& reply);
   
-  std::string processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error);
+  std::string processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error, int32_t& i);
 
   /**
    * @brief Validates a phone number string and returns its numeric value.
@@ -113,4 +116,8 @@ private:
   Pond pond;
   int32_t* _user_id = nullptr;
   bool logged_in = false;
+  
+  std::string formatTweetText(const std::string& text, int lineWidth);
+
+  int32_t extractQuackId(const std::string& quackString);
 };

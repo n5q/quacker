@@ -235,6 +235,11 @@ private:
    */
   bool getUnqiueQuackID(int32_t& unique_id);
   
+  Pond::Quack getQuackFromID(const int32_t& quack_id);
+
+private:
+  sqlite3* _db;
+
   /**
   * @brief Retrieves the current time in GMT as a formatted string (HH:MM:SS).
   *
@@ -264,4 +269,6 @@ private:
     const std::string& list_name,
     const std::int32_t& user_id
   );
+
+  std::string formatTweetText(const std::string& text, int lineWidth);
 };
