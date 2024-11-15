@@ -526,7 +526,8 @@ std::vector<Pond::User> Pond::searchForUsers(const std::string& search_terms) {
     "SELECT usr, name "
     "FROM users "
     // lower for case insensitive search
-    "WHERE LOWER(name) LIKE '%' || LOWER(?) || '%'";
+    "WHERE LOWER(name) LIKE '%' || LOWER(?) || '%' "
+    "ORDER BY LENGTH(name)";
 
   sqlite3_stmt* stmt;
   if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
