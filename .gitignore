@@ -33,3 +33,10 @@
 
 .vscode
 build/
+
+#latex
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz
