@@ -129,7 +129,10 @@ bool Pond::addReply(const int32_t& user_id, const int32_t& reply_quack_id, const
     return false;
   }
 
-  int32_t new_tid = Pond::getUnqiueQuackID();
+  int32_t new_tid;
+  if (!this->getUnqiueQuackID(new_tid)) {
+    return false;
+  }
 
   // Bind parameters to prevent SQL injection
   sqlite3_bind_int(stmt, 1, new_tid);                                // tid;
@@ -140,6 +143,7 @@ bool Pond::addReply(const int32_t& user_id, const int32_t& reply_quack_id, const
   sqlite3_bind_int(stmt, 6, reply_quack_id);                         // replyto_tid
 
   // Execute the query.
+
   if (sqlite3_step(stmt) == SQLITE_DONE) {
     reply_added = true;
   }
