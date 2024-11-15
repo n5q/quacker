@@ -132,12 +132,12 @@ bool Pond::addReply(const int32_t& user_id, const int32_t& reply_quack_id, const
   int32_t new_tid = 1; // Temporary ._. Fix LTR
 
   // Bind parameters to prevent SQL injection
-  sqlite3_bind_int(stmt, 1, new_tid);                               // tid;
-  sqlite3_bind_int(stmt, 2, user_id);                               // writer_id
+  sqlite3_bind_int(stmt, 1, new_tid);                                // tid;
+  sqlite3_bind_int(stmt, 2, user_id);                                // writer_id
   sqlite3_bind_text(stmt, 3, text.c_str(), -1, SQLITE_STATIC);       // text
   sqlite3_bind_text(stmt, 4, this->_getDate(), -1, SQLITE_STATIC);   // tdate
   sqlite3_bind_text(stmt, 5, this->_getDate(), -1, SQLITE_STATIC);   // ttime
-  sqlite3_bind_int(stmt, 6, reply_quack_id);                        // replyto_tid
+  sqlite3_bind_int(stmt, 6, reply_quack_id);                         // replyto_tid
 
   // Execute the query.
   if (sqlite3_step(stmt) == SQLITE_DONE) {
@@ -426,39 +426,6 @@ bool Pond::unfollow(const int32_t& user_id, const int32_t& follow_id) {
   return unfollowed;
 }
 
-bool Pond::reply(const int32_t& user_id, const int32_t& reply_quack_id, const std::string& text) {
-  bool reply_added = false;
-
-  const char* query =
-    "INSERT INTO tweets (tid, writer_id, text, tdate, ttime, replyto_tid) "
-    "VALUES (?, ?, ?, ?, ?, ?)";
-
-  // Prepare the SQL statement.
-  sqlite3_stmt* stmt;
-  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
-    sqlite3_finalize(stmt);
-    return false;
-  }
-
-  int32_t new_tid = -1; // TODO: get id from moussas function
-
-  // Bind parameters to prevent SQL injection
-  sqlite3_bind_int(stmt,  1, new_tid);                               // tid;
-  sqlite3_bind_int(stmt,  2, user_id);                               // writer_id
-  sqlite3_bind_text(stmt, 3, text.c_str(), -1, SQLITE_STATIC);       // text
-  sqlite3_bind_text(stmt, 4, this->_getDate(), -1, SQLITE_STATIC);   // tdate
-  sqlite3_bind_text(stmt, 5, this->_getTime(), -1, SQLITE_STATIC);   // ttime
-  sqlite3_bind_int(stmt,  6, reply_quack_id);                        // replyto_tid
-
-  // Execute the query.
-  if (sqlite3_step(stmt) == SQLITE_DONE) {
-    reply_added = true;
-  }
-  sqlite3_finalize(stmt);
-
-  return reply_added;
-}
-
 bool Pond::requack(const int32_t& user_id, const int32_t& requack_quack_id, const bool spam) {
   bool requack_added = false;
 
@@ -684,6 +651,60 @@ bool Pond::getUniqueUserID(int32_t& unique_id) {
 
   return true;
 }
+
+bool Pond::getUnqiueQuackID(int32_t& unique_id) {
+  unique_id = 1;
+  bool found = false;
+
+  const char* query =
+    "SELECT tweets FROM tid WHERE tid >= 0 ORDER BY usr ASC";
+
+  sqlite3_stmt* stmt;
+  if (sqlite3_prepare_v2(this->_db, query, -1, &stmt, nullptr) != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    return false;
+  }
+
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    int32_t current_id = sqlite3_column_int(stmt, 0);
+
+    if (current_id == unique_id) {
+      unique_id++;
+    }
+    else if (current_id > unique_id) {
+      found = true;
+      break;
+    }
+  }
+
+  sqlite3_finalize(stmt);
+
+  if (!found && unique_id > INT32_MAX) {
+    unique_id = -1;
+    const char* query_neg =
+      "SELECT usr FROM users WHERE usr < 0 ORDER BY usr DESC";
+
+    if (sqlite3_prepare_v2(this->_db, query_neg, -1, &stmt, nullptr) != SQLITE_OK) {
+      sqlite3_finalize(stmt);
+      return false;
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+      int32_t current_id = sqlite3_column_int(stmt, 0);
+
+      if (current_id == unique_id) {
+        unique_id--;
+      }
+      else if (current_id < unique_id) {
+        break;
+      }
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  return true;
+}
+
 
 /**
  * @brief Retrieves the current time in GMT as a formatted string (HH:MM:SS).

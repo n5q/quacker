@@ -185,22 +185,16 @@ public:
     const int32_t& follow_id
   );
 
-  bool reply(
-    const int32_t& user_id,
-    const int32_t& reply_quack_id,
-    const std::string& text
-  );
-
   bool requack(
     const int32_t& user_id,
     const int32_t& requack_quack_id,
     const bool spam
   );
 
-  bool report(
-    const int32_t& user_id,
-    const int32_t& quack_id
-  );
+  // bool report(
+  //   const int32_t& user_id,
+  //   const int32_t& quack_id
+  // );
 
   /**
    * @brief Searches for users in the database whose names contain the specified search terms.
@@ -225,6 +219,9 @@ public:
     const std::string& search_terms
   );
 
+private:
+  sqlite3* _db;
+
   /**
    * @brief Finds a unique user ID that is not currently in use in the database.
    *
@@ -233,9 +230,11 @@ public:
    */
   bool getUniqueUserID(int32_t& unique_id);
 
-private:
-  sqlite3* _db;
-
+  /**
+   * 
+   */
+  bool getUnqiueQuackID(int32_t& unique_id);
+  
   /**
   * @brief Retrieves the current time in GMT as a formatted string (HH:MM:SS).
   *
