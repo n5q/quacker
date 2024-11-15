@@ -219,13 +219,9 @@ public:
     const int32_t& quack_id
   );
 
-  std::vector<int32_t> getFollowers(
-    const int32_t& user_id
-  );
-
-  std::vector<int32_t> getFollows(
-    const int32_t& user_id
-  );
+  std::vector<int32_t> getFollowers(const int32_t& user_id);
+  std::vector<Pond::User> getFollowers_v2(const int32_t& user_id);
+  std::vector<int32_t> getFollows(const int32_t& user_id);
 
   // int32_t getQuackCount(const int32_t &user_id);
 

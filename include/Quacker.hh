@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <numeric>
 #include <iomanip>
+#include <termios.h>
+#include <unistd.h>
 
 #include "Pond.hh"
 
@@ -34,6 +36,9 @@ private:
 
   std::vector<int32_t> feed_quack_ids;
 
+
+  std::string getHiddenPassword();
+  
   /**
    * @brief Displays the login page and prompts the user for credentials.
    * 

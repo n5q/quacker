@@ -66,6 +66,41 @@ void Quacker::startPage() {
   }
 }
 
+std::string Quacker::getHiddenPassword() {
+  struct termios oldt, newt;
+  std::string password;
+  char ch;
+
+  // save old terminal settings and disable echo
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ECHO); // disable echo
+  newt.c_lflag &= ~(ICANON); // disable canonical mode 
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+  while (true) {
+    ch = getchar();
+    if (ch == '\n') { 
+      std::cout << std::endl;
+      break;
+    }
+    else if (ch == 127 || ch == '\b') { // backspace
+      if (!password.empty()) {
+        password.pop_back();
+        std::cout << "\b \b"; 
+      }
+    }
+    else {
+      password.push_back(ch);
+      std::cout << '*'; 
+    }
+  }
+
+  // restore old terminal settings
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  return password;
+}
+
 /**
  * @brief Displays the login page and prompts the user for credentials.
  * 
@@ -102,7 +137,8 @@ void Quacker::loginPage() {
 
     // Ask for the password
     std::cout << "Password: ";
-    std::getline(std::cin, password);
+    password = this->getHiddenPassword();
+    // std::getline(std::cin, password);
 
     // Check login credentials
     this->_user_id = pond.checkLogin(user_id, password);
@@ -161,7 +197,8 @@ void Quacker::signupPage() {
 
     // Get and validate the password
     std::cout << "Enter Password: ";
-    std::getline(std::cin, password);
+    password = this->getHiddenPassword();
+    // std::getline(std::cin, password);
     if (password.empty()) return;
 
     // Add user to the database
@@ -271,6 +308,7 @@ void Quacker::mainPage() {
         }
       
       case '6':
+        this->followersPage();
       break;
 
       case '7':
@@ -755,7 +793,26 @@ void Quacker::followersPage() {
   std::string error = "";
   while (true) {
     std::system("clear");
-    std::vector<int32_t> flwers = pond.getFollowers(*(this->_user_id));
+    std::vector<Pond::User> flwers = pond.getFollowers_v2(*(this->_user_id));
+    std::cout << QUACKER_BANNER;
+    std::cout << "\nYour Followers:\n\n";
+    for (const Pond::User& flwer : flwers) {
+      std::ostringstream oss;
+      oss << "----------------------------------------------------------------------------------------------------\n";
+      oss << "  User ID: " << std::setw(40) << std::left << flwer.usr
+          << "Name: " << flwer.name << "\n";
+      std::cout << oss.str();
+    }
+    std::cout << "----------------------------------------------------------------------------------------------------\n\n";
+    std::cout << "Press Enter to return... ";
+    std::string input;
+    std::getline(std::cin, input);
+    while (!input.empty()) {
+      std::cout << "\033[A\033[2K" << std::flush;
+      std::cout << "Input Is Invalid: Press Enter to return... ";
+      std::getline(std::cin, input);
+    }
+    break;
   }
 }
 
