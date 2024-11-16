@@ -29,11 +29,10 @@ Quacker 🦆 is a CLI based social media platform that allows users to share pos
 
 3. **Testing**:  
    - Run the test script `test/populate_db.py` to populate the database with random test data:
+     
      ```
      python3 test/populate_db.py
      ```
-   - Adjust parameters for the generated data in the `populate_db()` function in the script if needed.
-
 ---
 
 ### **Group Work Break-Down Strategy**
