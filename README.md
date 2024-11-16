@@ -5,7 +5,7 @@
 Group member names and ccids (3-4 members)  
   omahmoud, Omar Mahmoud  
   ymoussa, Yousef Moussa  
-  nqadri, nasif qadri
+  nqadri, Nasif Qadri
 
 Quacker 🦆 is a CLI based social media platform that allows users to share posts, follow others, and interact with content, entirely built with **C++** and its corresponding **SQLite3** library. 
 
