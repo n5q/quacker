@@ -853,10 +853,14 @@ void Quacker::searchQuacksPage() {
     std::vector<Pond::Quack> users_quacks = pond.getQuacks(user.usr);
 
     for (const Pond::Quack& result : users_quacks) {
-        if(i > hardstop) break;
+        ++i;
+        if(i-1 > hardstop) break;
+        if(hardstop >= static_cast<int32_t>(pond.getQuacks(user.usr).size())) {
+          if((i-1 <= (static_cast<int32_t>(pond.getQuacks(user.usr).size()-3)))) continue;
+        } else if((i-1 <= (hardstop-3))) continue;
         std::ostringstream oss;
         
-        oss << i << ".\n";
+        oss << i-1 << ".\n";
         oss << "Quack ID: " << result.tid;
         oss << ", Author: " << ((pond.getUsername(result.writer_id) != "") ? pond.getUsername(result.writer_id) : "Unknown");
         oss << std::string(69 - oss.str().length(), ' ');
@@ -868,8 +872,6 @@ void Quacker::searchQuacksPage() {
         for(int i = 0; i < 100; ++i) oss << '-'; 
         oss << '\n';
         std::cout << oss.str();
-
-        ++i;
       }
 
     std::cout << error <<
@@ -887,7 +889,7 @@ void Quacker::searchQuacksPage() {
       case '1':
         error = "";
         hardstop += 3;
-        if (static_cast<long unsigned int>(hardstop) > users_quacks.size() + 3){
+        if (static_cast<long unsigned int>(hardstop) >= users_quacks.size() + 3){
           error = "\nThis User Has No More Quacks To Diplay!";
           hardstop -= 3;
           break;
@@ -957,7 +959,7 @@ void Quacker::searchQuacksPage() {
               }
 
               int32_t selection = std::stoi(input)-1;
-              if (selection > static_cast<int32_t>(i-2)) {
+              if (selection > static_cast<int32_t>(i-2) || selection < static_cast<int32_t>(i-6)) {
                   std::cout << "\033[A\033[2K" << std::flush;
                   std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return... ";
                   std::getline(std::cin, input);
