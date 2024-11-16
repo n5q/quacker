@@ -44,7 +44,7 @@ Design Document - CMPUT 291 Mini Project 1\\}
   \subsection*{Running the Application}
 	\begin{enumerate}
 		\item \textbf{Compile the Application:} \\
-		Use the provided \texttt{Makefile} to compile the code by running:
+		Use the provided \textit{Makefile} to compile the code by running:
 		\begin{verbatim}
 		make
 		\end{verbatim}
@@ -67,29 +67,29 @@ Design Document - CMPUT 291 Mini Project 1\\}
 The application consists of the following key components:
 
 	\subsection*{Quacker Class}
-	The \texttt{Quacker} class is the main entry point of the application and manages user interactions. It provides functionality such as:
+	The \textit{Quacker} class is the main entry point of the application and manages user interactions. It provides functionality such as:
 	\begin{itemize}
-		\item \textbf{User Authentication:} Handles login and signup using methods \texttt{loginPage()} and \texttt{signupPage()}.
-		\item \textbf{Feed Management:} Displays the user feed using the \texttt{mainPage()} function, and interacts with the \texttt{Pond} class for data.
-		\item \textbf{Posting Quacks:} Allows users to post and reply to Quacks using the \texttt{postingPage()} and \texttt{replyPage()} methods.
-		\item \textbf{Search Functionality:} Facilitates searching for users and Quacks using \texttt{searchUsersPage()} and \texttt{searchQuacksPage()}.
+		\item \textbf{User Authentication:} Handles login and signup using methods \textit{loginPage()} and \textit{signupPage()}.
+		\item \textbf{Feed Management:} Displays the user feed using the \textit{mainPage()} function, and interacts with the \textit{Pond} class for data.
+		\item \textbf{Posting Quacks:} Allows users to post and reply to Quacks using the \textit{postingPage()} and \textit{replyPage()} methods.
+		\item \textbf{Search Functionality:} Facilitates searching for users and Quacks using \textit{searchUsersPage()} and \textit{searchQuacksPage()}.
 	\end{itemize}
 
 	\subsection*{Pond Class}
-	The \texttt{Pond} class handles all database interactions and encapsulates the data logic. It includes:
+	The \textit{Pond} class handles all database interactions and encapsulates the data logic. It includes:
 	\begin{itemize}
-		\item \textbf{User Management:} Provides methods for adding users (\texttt{addUser()}) and validating login credentials (\texttt{checkLogin()}).
-		\item \textbf{Quack Management:} Handles operations like adding new Quacks (\texttt{addQuack()}), replies (\texttt{addReply()}), and managing hashtags.
-		\item \textbf{Feed Retrieval:} Generates personalized user feeds (\texttt{getFeed()}), combining tweets and requacks in chronological order.
-		\item \textbf{Search Operations:} Performs database queries for searching users (\texttt{searchForUsers()}) and Quacks (\texttt{searchForQuacks()}).
+		\item \textbf{User Management:} Provides methods for adding users (\textit{addUser()}) and validating login credentials (\textit{checkLogin()}).
+		\item \textbf{Quack Management:} Handles operations like adding new Quacks (\textit{addQuack()}), replies (\textit{addReply()}), and managing hashtags.
+		\item \textbf{Feed Retrieval:} Generates personalized user feeds (\textit{getFeed()}), combining tweets and requacks in chronological order.
+		\item \textbf{Search Operations:} Performs database queries for searching users (\textit{searchForUsers()}) and Quacks (\textit{searchForQuacks()}).
 	\end{itemize}
 
 	\subsection*{Component Interactions}
-	The application follows a structured flow of data between the \texttt{Quacker} and \texttt{Pond} classes:
+	The application follows a structured flow of data between the \textit{Quacker} and \textit{Pond} classes:
 	\begin{enumerate}
-		\item The user interfaces with the \texttt{Quacker} class, which calls the relevant \texttt{Pond} methods for database interactions.
-		\item The \texttt{Pond} class processes SQL queries to retrieve, insert, or update data in the database.
-		\item Results from the \texttt{Pond} class are used to render user-friendly views in the \texttt{Quacker} class.
+		\item The user interfaces with the \textit{Quacker} class, which calls the relevant \textit{Pond} methods for database interactions.
+		\item The \textit{Pond} class processes SQL queries to retrieve, insert, or update data in the database.
+		\item Results from the \textit{Pond} class are used to render user-friendly views in the \textit{Quacker} class.
 	\end{enumerate}
 
 \newpage
