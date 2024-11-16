@@ -1,5 +1,9 @@
 #include "Quacker.hh"
 
+// =============================================================================
+// Public Methods
+// =============================================================================
+
 /**
  * @brief Constructs a Quacker object and attempts to load the database.
  *
@@ -43,6 +47,10 @@ Quacker::~Quacker() {
 void Quacker::run() {
   startPage();
 }
+
+// =============================================================================
+// Private Methods
+// =============================================================================
 
 /**
  * @brief Displays the main start page for the Quacker application and prompts user actions.
@@ -248,7 +256,7 @@ void Quacker::mainPage() {
     char select;
     std::cout << QUACKER_BANNER << "\nWelcome back, " << username 
     << "! (User Id: " << *(this->_user_id) << ")\n\n-------------------------------------------- Your Feed ---------------------------------------------\n";
-    std::cout << processFeed(*(this->_user_id), FeedDisplayCount, error, i);
+    std::cout << processFeed(FeedDisplayCount, error, i);
     std::cout << "\n" << error << "\n\n1. See More Of My Feed\n"
                                       "2. See Less Of My Feed\n"
                                       "3. Search For Users\n"
@@ -317,7 +325,7 @@ void Quacker::mainPage() {
               valid_input = true;
 
               if (valid_input) {
-                this->quackPage(*(this->_user_id), pond.getQuackFromID(this->feed_quack_ids[selection]));
+                this->quackPage(pond.getQuackFromID(this->feed_quack_ids[selection]));
               }
               break;
             }
@@ -704,7 +712,7 @@ void Quacker::searchQuacksPage() {
               valid_input = true;
             
               if (selection <= static_cast<int32_t>(results.size())) {
-                this->quackPage(*(this->_user_id), results[selection]);
+                this->quackPage(results[selection]);
               }
               break;
             }
@@ -779,12 +787,12 @@ void Quacker::searchQuacksPage() {
               valid_input = true;
               
               if((selection+1 <= QuackDisplayCount && selection+1 > QuackDisplayCount-5) && QuackDisplayCount < static_cast<int32_t>(results.size())){
-                this->quackPage(*(this->_user_id), results[selection]);
+                this->quackPage(results[selection]);
                 input = "";
                 valid_input = true;
               }
               else if((selection+1 <= static_cast<int32_t>(results.size()) && (selection+1 > static_cast<int32_t>(results.size()-5)) && QuackDisplayCount >= static_cast<int32_t>(results.size()))){
-                this->quackPage(*(this->_user_id), results[selection]);
+                this->quackPage(results[selection]);
                 input = "";
                 valid_input = true;
               } else{
@@ -868,7 +876,8 @@ void Quacker::searchQuacksPage() {
       "\n\n1. See More Of The Users Quacks"
       "\n2. See Less Of The Users Quacks"
       "\n3. Follow The User"
-      "\n4. Return"
+      "\n4. Reply/Requack To a Quack" 
+      "\n5. Return"
       "\n\nSelection: ";
     std::cin >> select;
     if (std::cin.peek() != '\n') select = '0';
@@ -926,7 +935,49 @@ void Quacker::searchQuacksPage() {
           }
         }
         break;
-      case '4':
+      case '4':{
+          std::cout << "\nSelect a tweet (1,2,3,...) to reply/retweet or press Enter to return... ";
+          std::string input;
+          std::getline(std::cin, input);
+          if (input.empty()) {
+            break;
+          }
+          else {
+            bool valid_input = false;
+            while(!valid_input){
+              std::regex positive_integer_regex("^[1-9]\\d*$");
+              if (!std::regex_match(input, positive_integer_regex)) {
+                  std::cout << "\033[A\033[2K" << std::flush;
+                  std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return... ";
+                  std::getline(std::cin, input);
+                  if (input.empty()) {
+                    break;
+                  }
+                  continue;
+              }
+
+              int32_t selection = std::stoi(input)-1;
+              if (selection > static_cast<int32_t>(i-2)) {
+                  std::cout << "\033[A\033[2K" << std::flush;
+                  std::cout << "Input Is Invalid: Select a tweet (1,2,3,...) to reply/retweet OR press Enter to return... ";
+                  std::getline(std::cin, input);
+                  if (input.empty()) {
+                    break;
+                  }
+                  continue;
+              }
+              valid_input = true;
+
+              if (valid_input) {
+                this->quackPage(users_quacks[selection]);
+              }
+              break;
+            }
+            break;
+          }
+        }
+        return;
+      case '5':
         error = "";
         return;
       default:
@@ -949,7 +1000,8 @@ void Quacker::searchQuacksPage() {
  * - Handles errors during reply submission and provides appropriate feedback.
  * - Users can exit the reply interface by pressing Enter without entering text.
  */
-void Quacker::replyPage(const int32_t& user_id, const Pond::Quack& reply) {
+void Quacker::replyPage(const Pond::Quack& reply) {
+  const int32_t user_id = *(this->_user_id);
   std::string error = "";
   while (true) {
     std::system("clear");
@@ -1005,7 +1057,8 @@ void Quacker::replyPage(const int32_t& user_id, const Pond::Quack& reply) {
  * - Handles errors during requacking and provides feedback.
  * - Allows users to exit the interface by selecting the return option.
  */
-void Quacker::quackPage(const int32_t& user_id, const Pond::Quack& reply) {
+void Quacker::quackPage(const Pond::Quack& reply) {
+  const int32_t user_id = *(this->_user_id);
   std::string error = "";
   while (true) {
     std::system("clear");
@@ -1040,7 +1093,7 @@ void Quacker::quackPage(const int32_t& user_id, const Pond::Quack& reply) {
     switch (select) {
       case '1':
         error = "";
-        this->replyPage(user_id, reply);
+        this->replyPage(reply);
         break;
       case '2': {
         error = "";
@@ -1073,6 +1126,7 @@ void Quacker::quackPage(const int32_t& user_id, const Pond::Quack& reply) {
     }
   }
 }
+
 /**
  * @brief Displays the list of followers and allows interaction with the follower profiles.
  *
@@ -1086,7 +1140,6 @@ void Quacker::quackPage(const int32_t& user_id, const Pond::Quack& reply) {
  * - Validates user input for navigation and profile selection.
  * - Handles cases where there are no followers gracefully by displaying an appropriate message.
  */
-
 void Quacker::followersPage() {
   std::string description = "View your followers or press Enter to return.";
   
@@ -1269,8 +1322,28 @@ void Quacker::followersPage() {
   }
 }
 
-
-std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error, int32_t& i) {
+/**
+ * @brief Processes and formats the current user's feed for display.
+ *
+ * This method fetches the feed for the logged-in user, formats it for output,
+ * and handles pagination and display limits based on the `FeedDisplayCount`.
+ *
+ * @details
+ * - Retrieves the feed content for the logged-in user.
+ * - Formats the feed into a string for display, with appropriate indexing and delimiters.
+ * - Handles pagination:
+ *   - If `FeedDisplayCount` exceeds the available Quacks, adjusts it and sets an error message.
+ *   - Ensures `FeedDisplayCount` does not go below zero.
+ *   - Limits displayed Quacks to the requested count or the maximum available.
+ * - Populates a list of visible Quack IDs for interaction with displayed items.
+ *
+ * @param FeedDisplayCount The number of Quacks to display, adjusted as needed.
+ * @param error A reference to an error message string, set if display limits are exceeded.
+ * @param i A reference to a counter for Quack indexing, updated during processing.
+ * @return A formatted string representing the visible portion of the feed.
+ */
+std::string Quacker::processFeed(int32_t& FeedDisplayCount, std::string& error, int32_t& i) {
+    const std::int32_t user_id = *(this->_user_id);
     std::vector<std::string> feed = pond.getFeed(user_id);
 
     int32_t maxQuacks = feed.size();
@@ -1321,6 +1394,21 @@ std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDispl
     return oss.str();
 }
 
+
+/**
+ * @brief Captures a password input without displaying it on the screen.
+ *
+ * This method allows secure input of a password by disabling terminal echo 
+ * and handling backspace functionality for editing the input.
+ *
+ * @details
+ * - Temporarily modifies terminal settings to disable echo and canonical mode.
+ * - Captures each character typed by the user and replaces it with an asterisk (*) on the screen.
+ * - Supports backspace functionality to delete characters from the input.
+ * - Restores the original terminal settings after the input is complete.
+ *
+ * @return The entered password as a string.
+ */
 std::string Quacker::getHiddenPassword() {
   struct termios oldt, newt;
   std::string password;
@@ -1450,14 +1538,25 @@ std::string Quacker::trim(const std::string& str) {
   return (start < end) ? std::string(start, end) : std::string();
 }
 
-std::string Quacker::formatTweetText(const std::string& text, int lineWidth) {
+/**
+ * @brief Formats a given text to wrap lines at a specified width.
+ *
+ * This method formats a string by inserting line breaks to ensure that no line
+ * exceeds the specified `line_width`. Words are kept intact and wrapped cleanly 
+ * to the next line if necessary.
+ *
+ * @param text The input string to be formatted.
+ * @param line_width The maximum width of each line.
+ * @return A formatted string with line breaks added as necessary.
+ */
+std::string Quacker::formatTweetText(const std::string& text, int line_width) {
     std::istringstream words(text);  // Stream to split text into words
     std::string word;
     std::ostringstream formattedText;
     int currentLineLength = 0;
 
     while (words >> word) {
-        if (currentLineLength + word.length() + 1 > static_cast<std::string::size_type>(lineWidth)) {
+        if (currentLineLength + word.length() + 1 > static_cast<std::string::size_type>(line_width)) {
             formattedText << "\n";
             currentLineLength = 0;
         }
@@ -1474,6 +1573,21 @@ std::string Quacker::formatTweetText(const std::string& text, int lineWidth) {
     return formattedText.str();
 }
 
+/**
+ * @brief Extracts the Quack ID from a given string.
+ *
+ * This method parses a string to extract an integer ID prefixed by "Quack Id: ".
+ * If the string does not start with the required prefix or the ID is invalid, 
+ * an error message is displayed, and a default value is returned.
+ *
+ * @details
+ * - Checks if the input string starts with the prefix "Quack Id: ".
+ * - Uses a regular expression to extract the integer ID that follows the prefix.
+ * - Handles errors where the prefix is missing or the ID is not a valid integer.
+ *
+ * @param quackString The input string containing the Quack ID.
+ * @return The extracted Quack ID as an `int32_t`, or -1 if extraction fails.
+ */
 int32_t Quacker::extractQuackID(const std::string& quackString) {
     const std::string prefix = "Quack Id: ";
     

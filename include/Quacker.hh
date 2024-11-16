@@ -21,6 +21,7 @@ static const std::string QUACKER_BANNER  = "[38;5;44m [39m[38;5;44m [39m[38
 "[38;5;49m\\[39m[38;5;49m_[39m[38;5;49m_[39m[38;5;49m_[39m[38;5;48m,[39m[38;5;48m_[39m[38;5;48m\\[39m[38;5;48m [39m[38;5;48m\\[39m[38;5;48m_[39m[38;5;48m_[39m[38;5;48m,[39m[38;5;48m_[39m[38;5;84m|[39m[38;5;83m\\[39m[38;5;83m_[39m[38;5;83m_[39m[38;5;83m,[39m[38;5;83m_[39m[38;5;83m|[39m[38;5;83m\\[39m[38;5;83m_[39m[38;5;83m_[39m[38;5;83m_[39m[38;5;83m|[39m[38;5;119m_[39m[38;5;118m|[39m[38;5;118m\\[39m[38;5;118m_[39m[38;5;118m\\[39m[38;5;118m_[39m[38;5;118m_[39m[38;5;118m_[39m[38;5;118m|[39m[38;5;118m_[39m[38;5;154m|[39m[38;5;154m [39m[38;5;154m [39m[38;5;154m [39m[38;5;154m [39m[38;5;154m [39m[38;5;154m [39m[38;5;154m [39m[38;5;154m [39m[38;5;154m`[39m[38;5;148m-[39m[38;5;184m-[39m[38;5;184m-[39m[38;5;184m'[39m[38;5;184m[39m\n"
 "[38;5;49m[39m";
 
+
 /**
  * @class Quacker
  * @brief Manages the user interface and interaction for the Quacker application.
@@ -197,7 +198,7 @@ private:
    * - Handles errors during reply submission and provides appropriate feedback.
    * - Users can exit the reply interface by pressing Enter without entering text.
    */
-  void replyPage(const int32_t& user_id, const Pond::Quack& reply);
+  void replyPage(const Pond::Quack& reply);
 
   /**
    * @brief Provides an interface for interacting with a specific Quack.
@@ -212,13 +213,60 @@ private:
    * - Handles errors during requacking and provides feedback.
    * - Allows users to exit the interface by selecting the return option.
    */
-  void quackPage(const int32_t& user_id, const Pond::Quack& reply);
+  void quackPage(const Pond::Quack& reply);
 
+  /**
+   * @brief Displays the list of followers and allows interaction with the follower profiles.
+   *
+   * This method shows the user's followers and provides options to navigate through the list
+   * or view detailed profiles of individual followers.
+   *
+   * @details
+   * - Retrieves and displays a list of followers associated with the logged-in user.
+   * - Supports pagination for viewing more or fewer followers at a time.
+   * - Allows users to select a follower from the list to view their profile.
+   * - Validates user input for navigation and profile selection.
+   * - Handles cases where there are no followers gracefully by displaying an appropriate message.
+   */
   void followersPage();
   
-  
-  std::string processFeed(const std::int32_t& user_id, int32_t& FeedDisplayCount, std::string& error, int32_t& i);
+  /**
+ * @brief Processes and formats the current user's feed for display.
+ *
+ * This method fetches the feed for the logged-in user, formats it for output,
+ * and handles pagination and display limits based on the `FeedDisplayCount`.
+ *
+ * @details
+ * - Retrieves the feed content for the logged-in user.
+ * - Formats the feed into a string for display, with appropriate indexing and delimiters.
+ * - Handles pagination:
+ *   - If `FeedDisplayCount` exceeds the available Quacks, adjusts it and sets an error message.
+ *   - Ensures `FeedDisplayCount` does not go below zero.
+ *   - Limits displayed Quacks to the requested count or the maximum available.
+ * - Populates a list of visible Quack IDs for interaction with displayed items.
+ *
+ * @param FeedDisplayCount The number of Quacks to display, adjusted as needed.
+ * @param error A reference to an error message string, set if display limits are exceeded.
+ * @param i A reference to a counter for Quack indexing, updated during processing.
+ * @return A formatted string representing the visible portion of the feed.
+ */
+  std::string processFeed(int32_t& FeedDisplayCount, std::string& error, int32_t& i);
 
+
+  /**
+   * @brief Captures a password input without displaying it on the screen.
+   *
+   * This method allows secure input of a password by disabling terminal echo 
+   * and handling backspace functionality for editing the input.
+   *
+   * @details
+   * - Temporarily modifies terminal settings to disable echo and canonical mode.
+   * - Captures each character typed by the user and replaces it with an asterisk (*) on the screen.
+   * - Supports backspace functionality to delete characters from the input.
+   * - Restores the original terminal settings after the input is complete.
+   *
+   * @return The entered password as a string.
+   */
   std::string getHiddenPassword();
 
   /**
@@ -231,7 +279,9 @@ private:
    * @param input The phone number string to validate.
    * @return The numeric value of the phone number if valid, -1 if invalid.
    */
-  int64_t isValidPhoneNumber(const std::string& input);
+  int64_t isValidPhoneNumber(
+    const std::string& input
+  );
 
   /**
    * @brief Validates an email address format.
@@ -245,7 +295,9 @@ private:
    *
    * @note The regex used is sourced from https://emailregex.com/
    */
-  bool isValidEmail(const std::string& email);
+  bool isValidEmail(
+    const std::string& email
+  );
 
   /**
    * @brief Determines if a string is a valid integer ID.
@@ -257,14 +309,51 @@ private:
    * @param str The string to check.
    * @return true if the string is a valid integer, false otherwise.
    */
-  bool isID(std::string str);
+  bool isID(
+    std::string str
+  );
 
-  std::string formatTweetText(const std::string& text, int lineWidth);
+  /**
+   * @brief Trims leading and trailing whitespace from a string.
+   * 
+   * @param str The string to be trimmed.
+   * @return A new string with leading and trailing whitespace removed.
+   * 
+   * @note This function does not modify the original string but instead returns a new string with the whitespace removed.
+   */
+  std::string trim(
+    const std::string& str
+  );
 
-  int32_t extractQuackID(const std::string& quackString);
+  /**
+   * @brief Formats a given text to wrap lines at a specified width.
+   *
+   * This method formats a string by inserting line breaks to ensure that no line
+   * exceeds the specified `line_width`. Words are kept intact and wrapped cleanly 
+   * to the next line if necessary.
+   *
+   * @param text The input string to be formatted.
+   * @param line_width The maximum width of each line.
+   * @return A formatted string with line breaks added as necessary.
+   */
+  std::string formatTweetText(
+    const std::string& text, int line_width
+    );
 
-  std::string trim(const std::string& str);
-  
+  /**
+   * @brief Extracts the Quack ID from a given string.
+   *
+   * This method parses a string to extract an integer ID prefixed by "Quack Id: ".
+   * If the string does not start with the required prefix or the ID is invalid, 
+   * an error message is displayed, and a default value is returned.
+   *
+   * @param quackString The input string containing the Quack ID.
+   * @return The extracted Quack ID as an `int32_t`, or -1 if extraction fails.
+   */
+  int32_t extractQuackID(
+    const std::string& quackString
+  );
+
   Pond pond;
   int32_t* _user_id = nullptr;
   bool logged_in = false;
