@@ -1,8 +1,20 @@
 \documentclass[11pt]{article}
 
+<<<<<<< HEAD
 \usepackage{courier} \usepackage{enumerate} \usepackage{enumitem}
 \usepackage{float} \usepackage[margin=1in]{geometry} \usepackage{graphicx}
 \usepackage{listings} \usepackage{xcolor} \usepackage{amsmath}
+=======
+\usepackage{courier}
+\usepackage{enumerate} 
+\usepackage{enumitem}
+\usepackage{float}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+>>>>>>> 485c82114cc2a7885526f09b44b365cb1d6f3d91
 \usepackage{amssymb}
 
 \lstset{ language=Python, basicstyle=\ttfamily\small, keywordstyle=\color{blue},
@@ -12,151 +24,190 @@ backgroundcolor=\color{white}, % you can change the background color }
 
 \begin{document}
 
-\title{\huge Quacker} \author{Omar Mahmoud, Nasif Qadri, Yousef Moussa\\[0.5cm]
-Design Document - CMPUT 291 Mini Project 1\\} \date{2024-11-14}
+\title{\huge Quacker}
+\author{Omar Mahmoud,  Nasif Qadri,  Yousef Moussa\\[0.5cm] 
+Design Document - CMPUT 291 Mini Project 1\\}
+\date{2024-11-14}
 
-\maketitle % \newpage % \begin{abstract} % abstarct % \end{abstract}
+\maketitle
+% \newpage
+% \begin{abstract}
+% 	abstarct
+% \end{abstract}
 
-% The design document should include (a) a general overview of your system with
-a small user guide, (b) a detailed design of your software with a focus on the
-components required to deliver the major functions of your application, (c) your
-testing strategy, and (d) your group work break-down strategy. The general
-overview of the system gives a high-level introduction and may include a diagram
-showing the flow of data between different components; this can be useful for
-both users and developers of your application. The detailed design of your
-software should describe the responsibility and interface of each primary
-function or class (not secondary utility functions/classes) and the structure
-and relationships among them. Depending on the programming language being used,
-you may have methods, functions, or classes. The testing strategy discusses your
-general strategy for testing, with the scenarios being tested, the coverage of
-your test cases, and (if applicable) some statistics on the number of bugs found
-and the nature of those bugs. The group work strategy must list the breakdown of
-the work items among partners, both the time spent (an estimate) and the
-progress made by each partner, and your method of coordination to keep the
-project on track. The design document should also include documentation of any
-decision you have made that is not in the project specification or any coding
-you have done beyond or different from what is required.
+% The design document should include (a) a general overview of your system with a small user guide, (b) a detailed design of your software with a focus on the components required to deliver the major functions of your application, (c) your testing strategy, and (d) your group work break-down strategy. The general overview of the system gives a high-level introduction and may include a diagram showing the flow of data between different components; this can be useful for both users and developers of your application. The detailed design of your software should describe the responsibility and interface of each primary function or class (not secondary utility functions/classes) and the structure and relationships among them. Depending on the programming language being used, you may have methods, functions, or classes. The testing strategy discusses your general strategy for testing, with the scenarios being tested, the coverage of your test cases, and (if applicable) some statistics on the number of bugs found and the nature of those bugs. The group work strategy must list the breakdown of the work items among partners, both the time spent (an estimate) and the progress made by each partner, and your method of coordination to keep the project on track. The design document should also include documentation of any decision you have made that is not in the project specification or any coding you have done beyond or different from what is required.
 
-% a) \section{Overview and User Guide}
+% a)
+\section{Overview and User Guide}
 
-\subsection{System Overview} Quacker is a lightweight social media platform
-that enables users to share short posts (\textit{Quacks}), follow other users,
-and interact with users.
+\subsection{System Overview}
+Quacker is a lightweight social media platform that enables users to share short posts (\textit{Quacks}), follow other users, and interact with users. 
 
-\subsection{Features} The core features of Quacker include: \begin{itemize}
-\item \textbf{User Authentication:} Users can log in or sign up for an account.
-\item \textbf{Posting Quacks:} Users can create new Quacks or reply to existing
-ones. \item \textbf{Feed Management:} Users can view a personalized feed
-containing Quacks from people they follow. \item \textbf{Search Functionality:}
-Users can search for other users or specific Quacks by keywords or hashtags.
-\item \textbf{Follow System:} Users can follow others to curate their feed.
+\subsection{Features}
+The core features of Quacker include:
+\begin{itemize}
+    \item \textbf{User Authentication:} Users can log in or sign up for an account.
+    \item \textbf{Posting Quacks:} Users can create new Quacks or reply to existing ones.
+    \item \textbf{Feed Management:} Users can view a personalized feed containing Quacks from people they follow.
+    \item \textbf{Search Functionality:} Users can search for other users or specific Quacks by keywords or hashtags.
+    \item \textbf{Follow System:} Users can follow others to curate their feed.
 \end{itemize}
 
-\subsection{User Guide} This section provides a step-by-step guide to using
-Quacker.
+\subsection{User Guide}
+This section provides a step-by-step guide to using Quacker.
 
-\subsection*{Getting Started} \begin{enumerate} \item Launch the Quacker
-application. \item On the welcome page, choose from the following options:
-\begin{itemize} \item Press \textbf{1} to log in to your account. \item Press
-\textbf{2} to sign up for a new account. \item Press \textbf{3} to exit the
-application. \end{itemize} \end{enumerate}
-
-\subsection*{Creating an Account} \begin{enumerate} \item Select \textbf{2}
-(Sign Up) on the start page. \item Enter your details: \begin{itemize} \item
-\textbf{Name:} Your full name. \item \textbf{Email:} A valid email address.
-\item \textbf{Phone Number:} A 10-digit phone number. \item \textbf{Password:} A
-secure password. \end{itemize} \item If successful, you will logged in.
+\subsection*{Getting Started}
+\begin{enumerate}
+    \item Launch the Quacker application.
+    \item On the welcome page, choose from the following options:
+        \begin{itemize}
+            \item Press \textbf{1} to log in to your account.
+            \item Press \textbf{2} to sign up for a new account.
+            \item Press \textbf{3} to exit the application.
+        \end{itemize}
 \end{enumerate}
 
-\subsection*{Logging In} \begin{enumerate} \item Select \textbf{1} (Log In) on
-the start page. \item Enter your \textbf{User ID} and \textbf{Password}.
+\subsection*{Creating an Account}
+\begin{enumerate}
+    \item Select \textbf{2} (Sign Up) on the start page.
+    \item Enter your details:
+        \begin{itemize}
+            \item \textbf{Name:} Your full name.
+            \item \textbf{Email:} A valid email address.
+            \item \textbf{Phone Number:} A 10-digit phone number.
+            \item \textbf{Password:} A secure password.
+        \end{itemize}
+    \item If successful, you will logged in.
 \end{enumerate}
 
-\subsection*{Using the Feed} \begin{enumerate} \item View the latest Quacks
-from people you follow. \item Navigate using these options: \begin{itemize}
-\item Press \textbf{1} to see more Quacks. \item Press \textbf{2} to see fewer
-Quacks. \item Press \textbf{3} to search for users. \item Press \textbf{4} to
-search for Quacks. \item Press \textbf{5} to reply or repost a Quack from your
-feed. \item Press \textbf{6} to list your followers \item Press \textbf{7} to
-create a new Quack. \item Press \textbf{8} to log out. \end{itemize}
+\subsection*{Logging In}
+\begin{enumerate}
+    \item Select \textbf{1} (Log In) on the start page.
+    \item Enter your \textbf{User ID} and \textbf{Password}.
 \end{enumerate}
 
-\subsection*{Creating a Quack} \begin{enumerate} \item Navigate to the posting
-page by selecting \textbf{7} from the feed menu. \item Enter the text of your
-Quack. \item Press \textbf{Enter} to post the Quack. \end{enumerate}
-
-\subsection*{Searching for Users or Quacks} \begin{enumerate} \item Select
-\textbf{3} (Search for Users) or \textbf{4} (Search for Quacks) from the feed
-menu. \item Enter a search term (e.g., a name or hashtag). \item View the
-results and interact with users or Quacks as desired (follow, reply, etc...).
+\subsection*{Using the Feed}
+\begin{enumerate}
+    \item View the latest Quacks from people you follow.
+    \item Navigate using these options:
+        \begin{itemize}
+            \item Press \textbf{1} to see more Quacks.
+            \item Press \textbf{2} to see fewer Quacks.
+            \item Press \textbf{3} to search for users.
+            \item Press \textbf{4} to search for Quacks.
+            \item Press \textbf{5} to reply or repost a Quack from your feed.
+            \item Press \textbf{6} to list your followers
+            \item Press \textbf{7} to create a new Quack.
+            \item Press \textbf{8} to log out.
+        \end{itemize}
 \end{enumerate}
 
-\subsection*{Logging Out} \begin{enumerate} \item Select \textbf{8} from the
-feed menu to log out of your account. \item You will be redirected to the start
-page. \end{enumerate}
+\subsection*{Creating a Quack}
+\begin{enumerate}
+    \item Navigate to the posting page by selecting \textbf{7} from the feed menu.
+    \item Enter the text of your Quack.
+    \item Press \textbf{Enter} to post the Quack.
+\end{enumerate}
 
-\subsection*{Running the Application} \begin{enumerate} \item \textbf{Compile
-the Application:} \\ Use the provided \textit{Makefile} to compile the code by
-running: \begin{verbatim} make \end{verbatim} \item \textbf{Start the
-Application:} \\ Execute the application with a database filename:
-\begin{verbatim} build/quacker <database_filename> \end{verbatim} %
-\textit{Example:} % \begin{verbatim} % build/quacker test/test.db %
-\end{verbatim} % \item \textbf{Interacting with the Application:} \\ % Upon
-launch, the application displays the main start page, providing options for
-interacting with Quacker . \end{enumerate} % \newpage
+\subsection*{Searching for Users or Quacks}
+\begin{enumerate}
+    \item Select \textbf{3} (Search for Users) or \textbf{4} (Search for Quacks) from the feed menu.
+    \item Enter a search term (e.g., a name or hashtag).
+    \item View the results and interact with users or Quacks as desired (follow, reply, etc...).
+\end{enumerate}
 
-% b) \section{Software Design} The application consists of the following key
-components:
+\subsection*{Logging Out}
+\begin{enumerate}
+    \item Select \textbf{8} from the feed menu to log out of your account.
+    \item You will be redirected to the start page.
+\end{enumerate}
 
-\subsection*{Quacker Class} The \textit{Quacker} class is the main entry point
-of the application and manages user interactions. It provides functionality such
-as: \begin{itemize} \item \textbf{User Authentication:} Handles login and signup
-using methods \textit{loginPage()} and \textit{signupPage()}. \item \textbf{Feed
-Management:} Displays the user feed using the \textit{mainPage()} function, and
-interacts with the \textit{Pond} class for data. \item \textbf{Posting Quacks:}
-Allows users to post and reply to Quacks using the \textit{postingPage()} and
-\textit{replyPage()} methods. \item \textbf{Search Functionality:} Facilitates
-searching for users and Quacks using \textit{searchUsersPage()} and
-\textit{searchQuacksPage()}. \end{itemize}
 
-\subsection*{Pond Class} The \textit{Pond} class handles all database
-interactions and encapsulates the data logic. It includes: \begin{itemize} \item
-\textbf{User Management:} Provides methods for adding users (\textit{addUser()})
-and validating login credentials (\textit{checkLogin()}). \item \textbf{Quack
-Management:} Handles operations like adding new Quacks (\textit{addQuack()}),
-replies (\textit{addReply()}), and managing hashtags. \item \textbf{Feed
-Retrieval:} Generates personalized user feeds (\textit{getFeed()}), combining
-tweets and requacks in chronological order. \item \textbf{Search Operations:}
-Performs database queries for searching users (\textit{searchForUsers()}) and
-Quacks (\textit{searchForQuacks()}). \end{itemize}
 
-\subsection*{Component Interactions} The application follows a structured flow
-of data between the \textit{Quacker} and \textit{Pond} classes:
-\begin{enumerate} \item The user interfaces with the \textit{Quacker} class,
-which calls the relevant \textit{Pond} methods for database interactions. \item
-The \textit{Pond} class processes SQL queries to retrieve, insert, or update
-data in the database. \item Results from the \textit{Pond} class are used to
-render user-friendly views in the \textit{Quacker} class. \end{enumerate}
+  \subsection*{Running the Application}
+	\begin{enumerate}
+		\item \textbf{Compile the Application:} \\
+		Use the provided \textit{Makefile} to compile the code by running:
+		\begin{verbatim}
+		make
+		\end{verbatim}
+		\item \textbf{Start the Application:} \\
+		Execute the application with a database filename:
+		\begin{verbatim}
+		build/quacker <database_filename>
+		\end{verbatim}
+		% \textit{Example:}
+		% \begin{verbatim}
+		% build/quacker test/test.db
+		% \end{verbatim}
+		% \item \textbf{Interacting with the Application:} \\
+		% Upon launch, the application displays the main start page, providing options for interacting with Quacker .
+	\end{enumerate}
+% \newpage
+
+% b)
+\section{Software Design}
+The application consists of the following key components:
+
+	\subsection*{Quacker Class}
+	The \textit{Quacker} class is the main entry point of the application and manages user interactions. It provides functionality such as:
+	\begin{itemize}
+		\item \textbf{User Authentication:} Handles login and signup using methods \textit{loginPage()} and \textit{signupPage()}.
+		\item \textbf{Feed Management:} Displays the user feed using the \textit{mainPage()} function, and interacts with the \textit{Pond} class for data.
+		\item \textbf{Posting Quacks:} Allows users to post and reply to Quacks using the \textit{postingPage()} and \textit{replyPage()} methods.
+		\item \textbf{Search Functionality:} Facilitates searching for users and Quacks using \textit{searchUsersPage()} and \textit{searchQuacksPage()}.
+	\end{itemize}
+
+	\subsection*{Pond Class}
+	The \textit{Pond} class handles all database interactions and encapsulates the data logic. It includes:
+	\begin{itemize}
+		\item \textbf{User Management:} Provides methods for adding users (\textit{addUser()}) and validating login credentials (\textit{checkLogin()}).
+		\item \textbf{Quack Management:} Handles operations like adding new Quacks (\textit{addQuack()}), replies (\textit{addReply()}), and managing hashtags.
+		\item \textbf{Feed Retrieval:} Generates personalized user feeds (\textit{getFeed()}), combining tweets and requacks in chronological order.
+		\item \textbf{Search Operations:} Performs database queries for searching users (\textit{searchForUsers()}) and Quacks (\textit{searchForQuacks()}).
+	\end{itemize}
+
+	\subsection*{Component Interactions}
+	The application follows a structured flow of data between the \textit{Quacker} and \textit{Pond} classes:
+	\begin{enumerate}
+		\item The user interfaces with the \textit{Quacker} class, which calls the relevant \textit{Pond} methods for database interactions.
+		\item The \textit{Pond} class processes SQL queries to retrieve, insert, or update data in the database.
+		\item Results from the \textit{Pond} class are used to render user-friendly views in the \textit{Quacker} class.
+	\end{enumerate}
 
 % \newpage
 
-% c) \section{Testing Strategy} In testing this program the Python script
-\textit{populate\_db.py} was used repopulate the testing database with new
-unqiue data improving the manually typed tests ran on the project and increasing
-the number of tested edge cases. To generate simply run: \begin{verbatim}
-python3 test/populate_db.py \end{verbatim} The script should then return the
-data of a randomly generated user. This is to make it easier to locate a valid
-login to use when entering the program. Example: \begin{verbatim} Random User
-Data: User ID: 53 Name: Deborah Scott Email: jasminchang@example.com Phone:
-4567624481 Password: E1AjR1ib*t SUCCESS! Database populated with random test
-data. \end{verbatim} The test script also allows you to easily change parameters
-regarding the generated data. These can be located in the defintion of
-\textit{populate\_db()} and are self-explanitory as seen below:
-\begin{lstlisting} def populate_db(db_name, user_count=100, tweet_count=500,
-list_count=200, follow_count=300): \end{lstlisting} When it came to testing the
-application, this was done manually due to the page centric format of our user
-interface. The felxibilty of testing manually allowed our team to catch unique
-edge cases that may have passed over an automated system. % \newpage
+% c)
+\section{Testing Strategy}
+In testing this program the Python script \textit{populate\_db.py} was used repopulate the testing database with 
+new unqiue data improving the manually typed tests ran on the project and increasing the number of tested edge 
+cases. To generate simply run:
+\begin{verbatim}
+	python3 test/populate_db.py
+\end{verbatim}
+The script should then return the data of a randomly generated user. This is to make it easier to locate a valid
+login to use when entering the program. Example: 
+\begin{verbatim}
+	Random User Data:
+	User ID: 53
+	Name: Deborah Scott
+	Email: jasminchang@example.com
+	Phone: 4567624481
+	Password: E1AjR1ib*t
+	SUCCESS! Database populated with random test data.
+\end{verbatim}
+The test script also allows you to easily change parameters regarding the generated data. These can be located in the
+defintion of \textit{populate\_db()} and are self-explanitory as seen below:
+\begin{lstlisting}
+def populate_db(db_name, user_count=100, tweet_count=500, list_count=200, follow_count=300):
+\end{lstlisting}
+When it came to testing the application, this was done manually due to the page centric format of our user interface. 
+The felxibilty of testing manually allowed our team to catch unique edge cases that may have passed over an automated
+system.
+% \newpage
 
-% d) \section{Group Work Breakdown} We give all credit to Allah SWT, all
-success comes from Him alone. \end{document}
+
+% d)
+\section{Group Work Breakdown}
+We give all credit to Allah SWT, all success comes from Him alone.
+\end{document}
