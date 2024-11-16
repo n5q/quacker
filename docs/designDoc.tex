@@ -8,6 +8,8 @@
 \usepackage{graphicx}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
 
 \lstset{
 	language=Python,
@@ -62,7 +64,41 @@ Design Document - CMPUT 291 Mini Project 1\\}
 
 % b)
 \section{Software Design}
-Quacker can be seperated into three essential components...
+The application consists of the following key components:
+
+	\subsection*{Quacker Class}
+	The \texttt{Quacker} class is the main entry point of the application and manages user interactions. It provides functionality such as:
+	\begin{itemize}
+		\item \textbf{User Authentication:} Handles login and signup using methods \texttt{loginPage()} and \texttt{signupPage()}.
+		\item \textbf{Feed Management:} Displays the user feed using the \texttt{mainPage()} function, and interacts with the \texttt{Pond} class for data.
+		\item \textbf{Posting Quacks:} Allows users to post and reply to Quacks using the \texttt{postingPage()} and \texttt{replyPage()} methods.
+		\item \textbf{Search Functionality:} Facilitates searching for users and Quacks using \texttt{searchUsersPage()} and \texttt{searchQuacksPage()}.
+	\end{itemize}
+
+	\subsection*{Pond Class}
+	The \texttt{Pond} class handles all database interactions and encapsulates the data logic. It includes:
+	\begin{itemize}
+		\item \textbf{User Management:} Provides methods for adding users (\texttt{addUser()}) and validating login credentials (\texttt{checkLogin()}).
+		\item \textbf{Quack Management:} Handles operations like adding new Quacks (\texttt{addQuack()}), replies (\texttt{addReply()}), and managing hashtags.
+		\item \textbf{Feed Retrieval:} Generates personalized user feeds (\texttt{getFeed()}), combining tweets and requacks in chronological order.
+		\item \textbf{Search Operations:} Performs database queries for searching users (\texttt{searchForUsers()}) and Quacks (\texttt{searchForQuacks()}).
+	\end{itemize}
+
+	% \subsection*{Key Data Structures and Relationships}
+	% \begin{itemize}
+	%     \item \textbf{User Data:} Each user is represented as an entry in the \texttt{users} table with fields such as $usr$, $name$, $email$, and $password$.
+	%     \item \textbf{Quack Data:} Quacks are stored in the \texttt{tweets} table, which includes $tid$, $text$, $date$, and $time$.
+	%     \item \textbf{Follows Relationship:} The \texttt{follows} table maintains follower-followee relationships.
+	%     \item \textbf{Hashtag Mentions:} The \texttt{hashtag\_mentions} table tracks associations between Quacks and hashtags.
+	% \end{itemize}
+
+	\subsection*{Component Interactions}
+	\begin{enumerate}
+		\item The \texttt{Quacker} class calls the relevant \texttt{Pond} methods for database interactions.
+		\item The \texttt{Pond} class processes SQL queries to retrieve, insert, or update data in the database.
+		\item Results from the \texttt{Pond} class are used to render user-friendly views in the \texttt{Quacker} class.
+	\end{enumerate}
+	
 \newpage
 
 % c)
