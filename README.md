@@ -9,15 +9,6 @@ Group member names and ccids (3-4 members)
 
 Quacker 🦆 is a CLI based social media platform that allows users to share posts, follow others, and interact with content, entirely built with C++ and its corresponding SQLite3 library. 
 
-### **Group Work Break-Down Strategy**
-We divided tasks based on strengths and collaboration needs:
-
-- **Nasif Qadri**: Responsible for backend development, including database design and implementation of the `Pond` class.
-- **Yousef Moussa**: Focused on frontend development and the user interface within the `Quacker` class.
-- **Omar Mahmoud**: Managed testing strategies, the data population script, debugging edge cases, and documenting/commenting code.
-
-However, all of us contributed to different parts of the project, so these roles were not strictly defined.
-
 ---
 
 ### **Code Execution Guide**
@@ -42,6 +33,17 @@ However, all of us contributed to different parts of the project, so these roles
      python3 test/populate_db.py
      ```
    - Adjust parameters for the generated data in the `populate_db()` function in the script if needed.
+
+---
+
+### **Group Work Break-Down Strategy**
+We divided tasks based on strengths and collaboration needs:
+
+- **Nasif Qadri**: Responsible for backend development, including database design and implementation of the `Pond` class.
+- **Yousef Moussa**: Focused on frontend development and the user interface within the `Quacker` class.
+- **Omar Mahmoud**: Managed testing strategies, the data population script, debugging edge cases, and documenting/commenting code.
+
+However, all of us contributed to different parts of the project, so these roles were not strictly defined.
 
 ---
 
