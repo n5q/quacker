@@ -2,7 +2,7 @@ import sqlite3
 from faker import Faker
 import random
 
-def populate_database_with_random_data(db_name, user_count=100, tweet_count=500, list_count=200, follow_count=300):
+def populate_db(db_name, user_count=100, tweet_count=500, list_count=200, follow_count=300):
     conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
@@ -117,7 +117,7 @@ def populate_database_with_random_data(db_name, user_count=100, tweet_count=500,
         print(f"No user found with ID {random_user_id}")
     
     conn.close()
-    print("Database populated with random test data.")
+    print("SUCCESS! Database populated with random test data.")
 
 if __name__ == '__main__':
-    populate_database_with_random_data('test/test.db')
+    populate_db('test/test.db')

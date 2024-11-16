@@ -1,11 +1,26 @@
 \documentclass[12pt]{article}
 
+\usepackage{courier}
 \usepackage{enumerate} 
 \usepackage{enumitem}
-\usepackage{graphicx}
 \usepackage{float}
 \usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
 
+\lstset{
+	language=Python,
+	basicstyle=\ttfamily\small,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	showstringspaces=false,
+	identifierstyle=\color{black},
+	breaklines=true,
+	columns=fullflexible,
+	backgroundcolor=\color{white}, % you can change the background color
+}
 
 \begin{document}
 
@@ -24,14 +39,13 @@ Design Document - CMPUT 291 Mini Project 1\\}
 
 % a)
 \section{Overview and User Guide}
-	\subsection*{Running the Application}
+  \subsection*{Running the Application}
 	\begin{enumerate}
 		\item \textbf{Compile the Application:} \\
 		Use the provided \texttt{Makefile} to compile the code by running:
 		\begin{verbatim}
 		make
 		\end{verbatim}
-
 		\item \textbf{Start the Application:} \\
 		Execute the application with a database filename:
 		\begin{verbatim}
@@ -39,9 +53,8 @@ Design Document - CMPUT 291 Mini Project 1\\}
 		\end{verbatim}
 		\textit{Example:}
 		\begin{verbatim}
-		build/quacker test/prj-sample.db
+		build/quacker test/test.db
 		\end{verbatim}
-
 		\item \textbf{Interacting with the Application:} \\
 		Upon launch, the application displays the main start page, providing options for interacting with Quacker .
 	\end{enumerate}
@@ -49,19 +62,36 @@ Design Document - CMPUT 291 Mini Project 1\\}
 
 % b)
 \section{Software Design}
-\begin{center}
-\textit{
-Baila, baila conmigo\\
-Baila, baila mi amor\\
-Baila e mexe o umbigo\\
-Que así es que se baila mejor\\
-}
-\end{center}
+Quacker can be seperated into three essential components...
 \newpage
 
 % c)
 \section{Testing Strategy}
-We dont need to test our software because we are better
+In testing this program the Python script \textit{populate\_db.py} was used repopulate the testing database with 
+new unqiue data improving the manually typed tests ran on the project and increasing the number of tested edge 
+cases. To generate simply run:
+\begin{verbatim}
+	python3 test/populate_db.py
+\end{verbatim}
+The script should then return the data of a randomly generated user. This is to make it easier to locate a valid
+login to use when entering the program. Example: 
+\begin{verbatim}
+	Random User Data:
+	User ID: 53
+	Name: Deborah Scott
+	Email: jasminchang@example.com
+	Phone: 4567624481
+	Password: E1AjR1ib*t
+	SUCCESS! Database populated with random test data.
+\end{verbatim}
+The test script also allows you to easily change parameters regarding the generated data. These can be located in the
+defintion of \textit{populate\_db()} and are self-explanitory as seen below:
+\begin{lstlisting}
+def populate_db(db_name, user_count=100, tweet_count=500, list_count=200, follow_count=300):
+\end{lstlisting}
+When it came to testing the application, this was done manually due to the page centric format of our user interface. 
+The felxibilty of testing manually allowed our team to catch unique edge cases that may have passed over an automated
+system.
 \newpage
 
 
