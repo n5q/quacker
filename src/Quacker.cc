@@ -992,64 +992,244 @@ void Quacker::quackPage(const int32_t& user_id, const Pond::Quack& reply) {
 }
 
 void Quacker::followersPage() {
-  std::string error = "";
-  while (true) {
-    std::system("clear");
-    std::vector<Pond::User> results = pond.getFollowers(*(this->_user_id));
-    std::cout << QUACKER_BANNER;
-    std::cout << "\nYour Followers:\n\n";
-    uint32_t i = 1;
-    for (const Pond::User& flwer : results) {
-      std::ostringstream oss;
-      oss << "----------------------------------------------------------------------------------------------------\n";
-      oss << i << ".   User ID: " << std::setw(40) << std::left << flwer.usr
-        << "Name: " << flwer.name << "\n";
-      std::cout << oss.str();
-      ++i;
-    }
-    std::cout << "----------------------------------------------------------------------------------------------------\n\n";
+  // std::string error = "";
+  // while (true) {
+  //   std::system("clear");
+  //   std::vector<Pond::User> results = pond.getFollowers(*(this->_user_id));
+  //   std::cout << QUACKER_BANNER;
+  //   std::cout << "\nYour Followers:\n\n";
+  //   uint32_t i = 1;
+  //   for (const Pond::User& flwer : results) {
+  //     std::ostringstream oss;
+  //     oss << "----------------------------------------------------------------------------------------------------\n";
+  //     oss << i << ".   User ID: " << std::setw(40) << std::left << flwer.usr
+  //       << "Name: " << flwer.name << "\n";
+  //     std::cout << oss.str();
+  //     ++i;
+  //   }
+  //   std::cout << "----------------------------------------------------------------------------------------------------\n\n";
 
-    std::cout << "Select a user (1,2,3,...) OR press Enter to return: ";
+  //   std::cout << "Select a user (1,2,3,...) OR press Enter to return: ";
+  //   std::string input;
+  //   std::getline(std::cin, input);
+
+  //   if (input.empty()) {
+  //     return;
+  //   }
+
+  //   bool valid_input = false;
+  //   while (!valid_input) {
+  //     std::regex positive_integer_regex("^[1-9]\\d*$");
+  //     if (!std::regex_match(input, positive_integer_regex)) {
+  //       std::cout << "\033[A\033[2K" << std::flush;
+  //       std::cout << "Input Is Invalid: Select a user (1,2,3,...) OR press Enter to return: ";
+  //       std::getline(std::cin, input);
+
+  //       if (input.empty()) {
+  //         return; 
+  //       }
+  //       continue;
+  //     }
+
+  //     uint32_t selection = std::stoi(input) - 1;
+  //     if (selection > i - 2) {
+  //       std::cout << "\033[A\033[2K" << std::flush;
+  //       std::cout << "Input Is Invalid: Select a user (1,2,3,...) OR press Enter to return: ";
+  //       std::getline(std::cin, input);
+
+  //       if (input.empty()) {
+  //         return; 
+  //       }
+  //       continue;
+  //     }
+  //     valid_input = true;
+
+  //     if (selection < results.size()) {
+  //       this->userPage(results[selection]);
+  //     }
+  //     break;
+  //   }
+  // }
+  std::string description = "View your followers or press Enter to return.";
+  
+  // show search interface
+  std::system("clear");
+  std::cout << QUACKER_BANNER << "\n" << description << "\n\n--- Your Followers ---\n";
+
+  // query
+  std::vector<Pond::User> results = pond.getFollowers(*(this->_user_id));
+
+  // display results
+  if (results.empty()) {
+    std::cout << "You Do Not Follow Anyone :(\n";
+    std::cout << '\n' << '\n';
+    std::cout << "Press Enter to return... ";
     std::string input;
     std::getline(std::cin, input);
-
-    if (input.empty()) {
-      return;
+    while (!input.empty()) {
+      std::cout << "\033[A\033[2K" << std::flush;
+      std::cout << "Input Is Invalid: Press Enter to return... ";
+      std::getline(std::cin, input);
     }
+  } else {
+    int32_t i = 1;
+    int32_t UserDisplayCount = 5;
+    
+    while(true){
+      i = 1;
+      std::cout << "Found " << results.size() << " Users You Follow :)\n\n";
 
-    bool valid_input = false;
-    while (!valid_input) {
-      std::regex positive_integer_regex("^[1-9]\\d*$");
-      if (!std::regex_match(input, positive_integer_regex)) {
-        std::cout << "\033[A\033[2K" << std::flush;
-        std::cout << "Input Is Invalid: Select a user (1,2,3,...) OR press Enter to return: ";
+      for (const Pond::User& result : results) {
+        ++i;
+        if((UserDisplayCount < i-1 || i <= UserDisplayCount-4) && UserDisplayCount < static_cast<int32_t>(results.size())) continue;
+        else if((i <= static_cast<int32_t>(results.size()-4)) && UserDisplayCount >= static_cast<int32_t>(results.size())) continue;
+
+        std::ostringstream oss;
+        oss << "----------------------------------------------------------------------------------------------------\n";
+        oss << i-1 << ".\n";
+        oss << "  User ID: " << std::setw(40) << std::left << result.usr
+            << "Name: " << result.name << "\n\n";
+        std::cout << oss.str();
+      } std::cout << "----------------------------------------------------------------------------------------------------\n\n";
+      if(5 > static_cast<int32_t>(results.size())){
+        // Prompt the user to search again or return
+        std::cout << "Select a user (1,2,3,...) to follow OR press Enter to return: ";
+        std::string input;
         std::getline(std::cin, input);
-
         if (input.empty()) {
-          return; 
+          break;
         }
-        continue;
-      }
+        else {
+          bool valid_input = false;
+          while (!valid_input) {
+            std::regex positive_integer_regex("^[1-9]\\d*$");
+            if (!std::regex_match(input, positive_integer_regex)) {
+              std::cout << "\033[A\033[2K" << std::flush;
+              std::cout << "Input Is Invalid: Select a user (1,2,3,...) to follow OR press Enter to return: ";
+              std::getline(std::cin, input);
+              if (input.empty()) {
+                break;
+              }
+              continue;
+            }
 
-      uint32_t selection = std::stoi(input) - 1;
-      if (selection > i - 2) {
-        std::cout << "\033[A\033[2K" << std::flush;
-        std::cout << "Input Is Invalid: Select a user (1,2,3,...) OR press Enter to return: ";
+            int32_t selection = std::stoi(input) - 1;
+            if (selection > i - 2) {
+              std::cout << "\033[A\033[2K" << std::flush;
+              std::cout << "Input Is Invalid: Select a user (1,2,3,...) to follow OR press Enter to return: ";
+              std::getline(std::cin, input);
+              if (input.empty()) {
+                break;
+              }
+              continue;
+            }
+            valid_input = true;
+            
+            if (selection <= static_cast<int32_t>(results.size())) {
+              this->userPage(results[selection]);
+            }
+            break;
+          }  
+        }
+        break;
+      }
+      else{
+
+        // Prompt the user to search again or return
+        std::cout << "Select a user (1,2,3,...) to follow, Enter M for more users, Enter L for less users OR press Enter to return: ";
+        std::string input;
         std::getline(std::cin, input);
-
         if (input.empty()) {
-          return; 
+          break;
         }
-        continue;
-      }
-      valid_input = true;
+        else if (input == "M" || input == "m"){
+          if (UserDisplayCount < static_cast<int32_t>(results.size())){
+            UserDisplayCount +=5;
+            if(UserDisplayCount !=5) std::cout << "\033[25A" << "\033[0J";
+            else {
+              std::cout << "\033[5A" << "\033[0J";
+            }
+          } 
+          else{
+            std::cout << "\033[A\033[2K" << std::flush;
+            std::cout << "You Have No More Users To Display: Press Enter To Return: ";
+            std::getline(std::cin, input);
+            while (!input.empty()) {
+              std::cout << "\033[A\033[2K" << std::flush;
+              std::cout << "Invalid Input: Press Enter To Return: ";
+              std::getline(std::cin, input);
+            } std::cout << "\033[25A" << "\033[0J";
+          }
+          continue;
+        }
+        else if (input == "L" || input == "l"){
+          if (UserDisplayCount > 0) {
+            UserDisplayCount -=5;
+            std::cout << "\033[25A" << "\033[0J";
+          }
+          else{
+            std::cout << "\033[A\033[2K" << std::flush;
+            std::cout << "You Are Already Showing No Users: Press Enter To Return: ";
+            std::getline(std::cin, input);
+            while (!input.empty()) {
+              std::cout << "\033[A\033[2K" << std::flush;
+              std::cout << "Invalid Input: Press Enter To Return: ";
+              std::getline(std::cin, input);
+            } std::cout << "\033[5A" << "\033[0J";
+          }
+          continue;
+        }
+        else {
+          bool valid_input = false;
+          while (!valid_input) {
+            std::regex positive_integer_regex("^[1-9]\\d*$");
+            if (!std::regex_match(input, positive_integer_regex)) {
+              std::cout << "\033[A\033[2K" << std::flush;
+              std::cout << "Input Is Invalid: Press Enter To Return: ";
+              std::getline(std::cin, input);
+              while (!input.empty()) {
+              std::cout << "\033[A\033[2K" << std::flush;
+              std::cout << "Invalid Input: Press Enter To Return: ";
+              std::getline(std::cin, input);
+              } input = "dont break pls";
+              if (UserDisplayCount != 0) std::cout << "\033[25A" << "\033[0J";
+              else std::cout << "\033[A\033[2K" << std::flush << "\033[4A" << "\033[0J";
+              break;
+            }
 
-      if (selection < results.size()) {
-        this->userPage(results[selection]);
+            int32_t selection = std::stoi(input) - 1;
+            valid_input = true;
+            
+            if((selection+1 <= UserDisplayCount && selection+1 > UserDisplayCount-5) && UserDisplayCount < static_cast<int32_t>(results.size())){
+              this->userPage(results[selection]);
+              input = "";
+              valid_input = true;
+            }
+            else if((selection+1 <= static_cast<int32_t>(results.size()) && (selection+1 > static_cast<int32_t>(results.size()-5)) && UserDisplayCount >= static_cast<int32_t>(results.size()))){
+              this->userPage(results[selection]);
+              input = "";
+              valid_input = true;
+            } else{
+              std::cout << "\033[A\033[2K" << std::flush;
+              std::cout << "Input Is Invalid: Press Enter To Return: ";
+              std::getline(std::cin, input);
+              while (!input.empty()) {
+              std::cout << "\033[A\033[2K" << std::flush;
+              std::cout << "Invalid Input: Press Enter To Return: ";
+              std::getline(std::cin, input);
+              } input = "dont break pls";
+              if (UserDisplayCount != 0) std::cout << "\033[25A" << "\033[0J";
+              else std::cout << "\033[A\033[2K" << std::flush << "\033[4A" << "\033[0J";
+              break;
+            }
+            break;
+          }
+          if (input.empty()) break;
+        }
       }
-      break;
     }
   }
+
 }
 
 

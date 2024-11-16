@@ -12,10 +12,48 @@
 
 #include "definitions.hh"
 
+/**
+ * @class Pond
+ * @brief A class to manage and interact with a social media-style database system.
+ *
+ * The Pond class serves as the central component for managing users, quacks (posts),
+ * interactions such as following, replying, and liking, and general database queries.
+ * It provides methods to add, retrieve, and manipulate data related to users, quacks, hashtags,
+ * lists, and interactions.
+ *
+ * ### Features:
+ * - Manage users with functions for adding, retrieving, and authenticating.
+ * - Handle quacks, including creation, replies, requacks, and searching by content or hashtags.
+ * - Manage lists of quacks for users.
+ * - Enable user interactions such as following, unfollowing, and feed generation.
+ *
+ * The class interacts with an SQLite database to persistently store and retrieve data.
+ * It ensures proper validation of data and handles unique ID generation for users and quacks.
+ */
 class Pond
 {
 public:
+
+  /**
+   * @brief Constructs a new Pond object.
+   *
+   * Initializes the database connection pointer to `nullptr` to ensure a safe 
+   * and uninitialized state before the database is loaded.
+   *
+   * @note The database connection is not established in the constructor. 
+   *       Use the `loadDatabase` method to open a database connection.
+   */
   Pond();
+
+  /**
+   * @brief Destructs the Pond object and releases resources.
+   *
+   * Closes the SQLite database connection if it was opened, ensuring proper 
+   * cleanup of resources when the Pond object goes out of scope.
+   *
+   * @note If the database connection was never opened (i.e., `_db` is `nullptr`),
+   *       this method safely does nothing.
+   */
   ~Pond();
 
   /**
@@ -69,14 +107,50 @@ public:
     const std::string& password
   );
 
+  /**
+   * @brief Adds a hashtag to the hashtag_mentions table in the database.
+   *
+   * This method associates a hashtag with a specific quack in the database. If the hashtag 
+   * is already linked to the given quack (case-insensitively), no duplicate entry will be created.
+   *
+   * @param quack_id The unique ID of the quack to which the hashtag is being added.
+   * @param hashtag The hashtag term to associate with the quack.
+   * @return true if the hashtag was successfully added; false if an error occurred or 
+   *         the hashtag already exists for the quack.
+   *
+   * @note Ensures case-insensitive uniqueness of hashtags for the specified quack.
+   */
   bool addHashtag(
     const int32_t &quack_id, const std::string &hashtag
   );
 
+  /**
+   * @brief Validates a quack's content and processes its hashtags.
+   *
+   * This method ensures the text of a quack is non-empty and processes any hashtags within 
+   * the text. A quack can contain multiple hashtags, but duplicate hashtags (case-insensitive) 
+   * are not allowed. If the text contains valid hashtags, they are added to the 
+   * `hashtag_mentions` table in the database.
+   *
+   * @param quack_id The unique ID of the quack being validated.
+   * @param text The text content of the quack to validate and process.
+   * @return true if the quack is valid (non-empty text and no duplicate hashtags); 
+   *         false otherwise.
+   *
+   * @note The method converts all hashtags to lowercase for consistent storage and validation.
+   *       It uses the `addHashtag` method to store valid hashtags in the database.
+   */
   bool validateQuack(
     const int32_t &quack_id, const std::string &text
   );
 
+  /**
+   * @brief Adds a new quack to the database.
+   *
+   * @param user_id The ID of the user who is posting the quack.
+   * @param text The text of the quack.
+   * @return A pointer to the unique ID of the quack if it was successfully added; nullptr otherwise.
+   */
   int32_t* addQuack(
     const int32_t& user_id,
     const std::string& text
@@ -96,6 +170,30 @@ public:
     const std::string& text
   );
 
+  /**
+   * @brief Adds a requack (retweet) for a specific quack by a user.
+   *
+   * This method checks if the user has already requacked the given quack. If the requack 
+   * already exists, it updates the entry to mark it as spam. Otherwise, it adds a new 
+   * requack entry to the database.
+   *
+   * @param user_id The unique ID of the user performing the requack.
+   * @param quack_id The unique ID of the quack being requacked.
+   * @return An integer status code:
+   *         - 0: A new requack was successfully added.
+   *         - 1: The requack already exists and was marked as spam.
+   *         - 3: An error occurred during the process.
+   *
+   * @note The method uses parameterized SQL queries to prevent SQL injection and ensures
+   *       proper database interaction. Dates for new requacks are recorded using the current
+   *       date.
+   *
+   * @details 
+   * - **Spam Handling**: If a requack already exists for the user and quack, the method updates
+   *   the existing record, setting the `spam` flag to `1`.
+   * - **New Requack**: If no requack exists, a new entry is added to the `retweets` table,
+   *   linking the `quack_id` to the `user_id` and recording the `writer_id` and current date.
+   */
   int32_t addRequack(
       const int32_t &user_id,
       const int32_t &quack_id
@@ -219,12 +317,63 @@ public:
     const int32_t& quack_id
   );
 
-  // std::vector<int32_t> getFollowers(const int32_t& user_id);
+  /**
+   * @brief Retrieves the list of followers for a specified user.
+   *
+   * This method queries the database to find all users who follow the specified user
+   * and returns their IDs and names.
+   *
+   * @param user_id The unique ID of the user whose followers are to be retrieved.
+   * @return A vector of `Pond::User` objects, where each object contains:
+   *         - `usr`: The unique ID of the follower.
+   *         - `name`: The name of the follower.
+   *
+   * @note If no followers are found or if an error occurs during the query, the method
+   *       returns an empty vector.
+   *
+   * @details
+   * - The method uses an SQL query with a join between the `follows` and `users` tables
+   *   to fetch the follower details.
+   * - Parameterized SQL queries are used to prevent SQL injection.
+   * - Each follower is represented by a `Pond::User` struct.
+   */
   std::vector<Pond::User> getFollowers(const int32_t& user_id);
+
+  /**
+   * @brief Retrieves a list of users that a specified user is following.
+   *
+   * This method queries the database to find all user IDs of the users whom the 
+   * specified user has chosen to follow.
+   *
+   * @param user_id The unique ID of the user whose following list is to be retrieved.
+   * @return A vector of integers where each integer represents the unique ID of a user 
+   *         that the specified user is following.
+   *
+   * @note If the user is not following anyone or if an error occurs during the query, 
+   *       the method returns an empty vector.
+   */
   std::vector<int32_t> getFollows(const int32_t& user_id);
 
-  // int32_t getQuackCount(const int32_t &user_id);
 
+  /**
+   * @brief Retrieves all quacks created by a specified user.
+   *
+   * This method queries the database to fetch all quacks (tweets) authored by the given 
+   * user, sorted by date and time in descending order (most recent first).
+   *
+   * @param user_id The unique ID of the user whose quacks are to be retrieved.
+   * @return A vector of `Pond::Quack` objects, where each object contains:
+   *         - `tid`: The unique ID of the quack.
+   *         - `writer_id`: The unique ID of the user who authored the quack.
+   *         - `text`: The text content of the quack.
+   *         - `date`: The date the quack was created (format: YYYY-MM-DD).
+   *         - `time`: The time the quack was created (format: HH:MM:SS).
+   *         - `replyto_tid`: The unique ID of the quack this quack is replying to, 
+   *           or 0 if it is not a reply.
+   *
+   * @note If the user has not authored any quacks or if an error occurs during the query, 
+   *       the method returns an empty vector.
+   */
   std::vector<Pond::Quack> getQuacks(
     const int32_t &user_id
   );
@@ -232,20 +381,41 @@ public:
 private:
   sqlite3* _db;
 
-  /**
-   * @brief Finds a unique user ID that is not currently in use in the database.
-   *
-   * @param[out] unique_id An integer reference that will be set to a unique user ID.
-   * @return `true` if a unique ID is successfully found and assigned; `false` if an error occurs.
-   */
-  bool getUniqueUserID(
+/**
+ * @brief Generates a unique ID for a new user by determining the maximum existing user ID.
+ *
+ * This method queries the `users` table in the database to find the maximum `usr` 
+ * (user ID) currently used. It then increments this value by 1 to create a new unique ID. 
+ * If no users exist in the database, it assigns `1` as the first ID.
+ *
+ * @param[out] unique_id An integer reference that will hold the generated unique user ID.
+ * @return true if the query was successful and the unique ID was generated; false otherwise.
+ *
+ * @note 
+ * - This method assumes a sequential numbering system for user IDs.
+ * - In the event of an empty `users` table, the ID starts from 1.
+ * - If an error occurs while preparing or executing the SQL query, the method returns `false`.
+ */
+  bool _getUniqueUserID(
     int32_t& unique_id
   );
 
   /**
-   * 
+   * @brief Generates a unique ID for a new quack by determining the maximum existing quack ID.
+   *
+   * This method queries the `tweets` table in the database to find the maximum `tid` (quack ID) 
+   * currently used. It then increments this value by 1 to create a new unique ID. If no quacks 
+   * exist in the database, it assigns `1` as the first ID.
+   *
+   * @param[out] unique_id An integer reference that will hold the generated unique quack ID.
+   * @return true if the query was successful and the unique ID was generated; false otherwise.
+   *
+   * @note 
+   * - This method assumes a sequential numbering system for quack IDs.
+   * - In the event of an empty `tweets` table, the ID starts from 1.
+   * - If an error occurs while preparing or executing the SQL query, the method returns `false`.
    */
-  bool getUniqueQuackID(
+  bool _getUniqueQuackID(
     int32_t& unique_id
   );
   
@@ -279,5 +449,22 @@ private:
     const int32_t& user_id
   );
 
-  std::string formatTweetText(const std::string& text, int lineWidth);
+  /**
+   * @brief Formats a tweet's text to fit within a specified line width.
+   *
+   * This method takes a tweet's text and formats it such that each line does not 
+   * exceed the given line width. Words are kept intact and moved to the next line 
+   * if they cannot fit on the current line.
+   *
+   * @param text The input string containing the text to be formatted.
+   * @param lineWidth The maximum width (in characters) allowed for each line.
+   * @return A formatted string where lines are separated by newline characters (`\n`).
+   *
+   * @note 
+   * - Words that are longer than the specified line width will be placed on their own line.
+   * - Consecutive spaces are ignored when formatting.
+   */
+  std::string formatTweetText(
+    const std::string& text, int lineWidth
+  );
 };
