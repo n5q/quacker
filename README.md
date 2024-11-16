@@ -21,9 +21,9 @@ However, all of us contributed to different parts of the project, so these roles
 
 ### **Code Execution Guide**
 1. **Prerequisites**:  
-   - Python 3.x installed  
-   - Required libraries (install using `pip install -r requirements.txt`)  
-   - SQLite or other database engine setup (as applicable)
+   - g++: Ensure the GNU C++ compiler is installed and supports C++17.
+   - make: Ensure the make utility is available.
+   - libsqlite3: Ensure SQLite3 development headers and libraries are installed on the system
 
 2. **Execution**:  
    - Compile the application using the provided `Makefile`:
@@ -45,7 +45,7 @@ However, all of us contributed to different parts of the project, so these roles
 ---
 
 ### **Collaboration Statement**
-We collaborated exclusively within our group. No external collaboration was involved beyond what is allowed by the course policy.
+We collaborated exclusively within our group. No external collaboration was involved.
 
 ---
 
