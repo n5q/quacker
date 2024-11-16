@@ -119,5 +119,5 @@ def populate_database_with_random_data(db_name, user_count=100, tweet_count=500,
     conn.close()
     print("Database populated with random test data.")
 
-# Replace 'test.db' with the path to your SQLite database
-populate_database_with_random_data('test/test.db')
+if __name__ == '__main__':
+    populate_database_with_random_data('test/test.db')
