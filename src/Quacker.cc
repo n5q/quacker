@@ -1,18 +1,45 @@
 #include "Quacker.hh"
 
-
+/**
+ * @brief Constructs a Quacker object and attempts to load the database.
+ *
+ * This constructor initializes the Quacker object and attempts to load
+ * the database from the specified file. If the database cannot be loaded,
+ * an error message is printed to `std::cerr`, and the program exits with
+ * a status code of ERROR_SQL.
+ *
+ * @param db_filename The name of the database file to load.
+ *
+ * @note Ensure that the provided `db_filename` points to a valid and
+ * accessible database file to prevent the program from terminating.
+ */
 Quacker::Quacker(const std::string& db_filename) {
   if (pond.loadDatabase(db_filename)) {
     std::cerr << "Database Error: Could Not Open" << db_filename << std::endl;
-    exit(-3);
+    exit(ERROR_SQL);
   }
 }
 
+/**
+ * @brief Destructor for the Quacker class.
+ *
+ * This destructor clears the console by executing the `clear` system command 
+ * and releases the memory allocated for the `_user_id` member variable.
+ */
 Quacker::~Quacker() {
   std::system("clear");
-  delete _user_id;
+  if (_user_id) {
+    delete _user_id;
+  }
 }
 
+/**
+ * @brief Initiates the main execution flow of the Quacker application.
+ *
+ * This method serves as the entry point for running the Quacker application.
+ * It begins by calling the `startPage()` method, which likely handles
+ * the initial setup or user interface for the application.
+ */
 void Quacker::run() {
   startPage();
 }
@@ -28,8 +55,6 @@ void Quacker::run() {
  * - **1. Log in**: Opens the login page.
  * - **2. Sign up**: Opens the signup page.
  * - **3. Exit**: Terminates the program.
- *
- * @note The screen is cleared before each menu display to keep the interface clean.
  */
 void Quacker::startPage() {
   std::string error = "";
@@ -66,46 +91,19 @@ void Quacker::startPage() {
   }
 }
 
-std::string Quacker::getHiddenPassword() {
-  struct termios oldt, newt;
-  std::string password;
-  char ch;
-
-  // save old terminal settings and disable echo
-  tcgetattr(STDIN_FILENO, &oldt);
-  newt = oldt;
-  newt.c_lflag &= ~(ECHO); // disable echo
-  newt.c_lflag &= ~(ICANON); // disable canonical mode 
-  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-
-  while (true) {
-    ch = getchar();
-    if (ch == '\n') { 
-      std::cout << std::endl;
-      break;
-    }
-    else if (ch == 127 || ch == '\b') { // backspace
-      if (!password.empty()) {
-        password.pop_back();
-        std::cout << "\b \b"; 
-      }
-    }
-    else {
-      password.push_back(ch);
-      std::cout << '*'; 
-    }
-  }
-
-  // restore old terminal settings
-  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-  return password;
-}
-
 /**
- * @brief Displays the login page and prompts the user for credentials.
- * 
- * @note The credentials are verified using the `checkLogin` method, and if successful,
- *       the `_user_id` member is updated with the user ID.
+ * @brief Manages user login by validating credentials.
+ *
+ * This method provides an interface for users to log in by entering their 
+ * User ID and password. It verifies the credentials and logs the user into 
+ * their account upon successful authentication.
+ *
+ * @details
+ * - Validates the User ID to ensure it is a valid integer.
+ * - Securely captures the password input.
+ * - Checks the entered credentials against the database and provides feedback 
+ *   if authentication fails.
+ * - Allows the user to exit the login process by pressing Enter without input.
  */
 void Quacker::loginPage() {
   std::string description = "Enter login credentials or press Enter to return.";
@@ -155,10 +153,17 @@ void Quacker::loginPage() {
 }
 
 /**
- * @brief Displays the sign-up page and prompts the user for details to create a new account.
- * 
- * @note The function utilizes `isValidEmail` for email validation, `isValidPhoneNumber` for phone number validation,
- *       and `pond.addUser` to add the new user to the database.
+ * @brief Handles user registration by collecting and validating input.
+ *
+ * This method provides an interface for new users to sign up by entering their
+ * name, email, phone number, and password. It validates the input and adds the 
+ * user to the database upon successful registration.
+ *
+ * @details
+ * - Ensures the email follows a valid format and the phone number is properly structured.
+ * - Safely captures and stores the password.
+ * - Attempts to register the user and provides feedback if the process encounters errors.
+ * - Automatically logs the user in after successful registration.
  */
 void Quacker::signupPage() {
   std::string description = "Enter your details or press Enter to return... ";
@@ -218,6 +223,19 @@ void Quacker::signupPage() {
   }
 }
 
+/**
+ * @brief Manages the main user interface for logged-in users.
+ *
+ * This method serves as the central hub for logged-in users, providing access 
+ * to features such as viewing and interacting with their feed, searching for 
+ * users or posts, creating new posts, and logging out.
+ *
+ * @details
+ * - Displays the user feed and adjusts the number of visible posts based on user selection.
+ * - Validates user input to ensure actions correspond to available menu options.
+ * - Provides options for replying to or retweeting posts directly from the feed.
+ * - Handles logging out by cleaning up the session and redirecting to the start page.
+ */
 void Quacker::mainPage() {
   std::string error = "";
   int32_t FeedDisplayCount = 5;
@@ -333,6 +351,17 @@ void Quacker::mainPage() {
   startPage();
 }
 
+/**
+ * @brief Allows the user to compose and post a new Quack.
+ *
+ * This method provides a user interface for creating and submitting a new Quack. 
+ * Users can input their text or press Enter to exit without posting.
+ *
+ * @details
+ * - Validates the input to ensure it is not empty before attempting to post.
+ * - Attempts to post the Quack using the database. If successful, the user is notified.
+ * - Handles errors during posting, such as issues with duplicate hashtags, and provides feedback.
+ */
 void Quacker::postingPage() {
   std::system("clear");
   std::string description = "Type your new Quack or press Enter to return.";
@@ -364,11 +393,18 @@ void Quacker::postingPage() {
 }
 
 /**
- * @brief Displays the user search page and prompts the user to enter a search term.
+ * @brief Provides a user interface for searching and interacting with users.
  *
- * The search term should be a portion of a user's name. The search results
- * are displayed to the user 5 at a time, showing matching users.
-*/
+ * This method allows users to search for other users by name and displays the results.
+ * Users can view more or fewer results, select a user to follow, or exit the search interface.
+ *
+ * @details
+ * - Retrieves and displays search results based on the input query.
+ * - Allows users to interact with search results by selecting a user to view or follow.
+ * - Handles navigation through paginated search results.
+ * - Ensures input validation for selection and provides appropriate feedback for invalid inputs.
+ * - Allows users to exit the interface by pressing Enter without input.
+ */
 void Quacker::searchUsersPage() {
   std::string description = "Search for a user or press Enter to return.";
   while (true) {
@@ -558,123 +594,18 @@ void Quacker::searchUsersPage() {
   }
 }
 
- void Quacker::userPage(const Pond::User& user) {
-  int32_t user_id = *(this->_user_id);
-  std::string error = "";
-  int32_t hardstop = 3;
-  while (true) {
-    int32_t i = 1;
-    std::system("clear");
-    char select;
-    std::cout << QUACKER_BANNER;
-    std::cout << "\nActions For User:\n\n";
-    std::ostringstream oss;
-    oss << "----------------------------------------------------------------------------------------------------\n";
-    oss << "  User ID: " << std::setw(40) << std::left << user.usr
-        << "Name: " << user.name << "\n";
-    oss << "  Followers: " << std::setw(38) << std::left << pond.getFollowers(user.usr).size()
-        << "Follows: " << pond.getFollows(user.usr).size() << "\n  Quack Count: " << pond.getQuacks(user.usr).size() << "\n\n";
-    std::cout << oss.str();
-    std::cout << "------------------------------------------- User's Quacks ------------------------------------------\n\n";
-    
-    std::vector<Pond::Quack> users_quacks = pond.getQuacks(user.usr);
-
-    for (const Pond::Quack& result : users_quacks) {
-        if(i > hardstop) break;
-        std::ostringstream oss;
-        
-        oss << i << ".\n";
-        oss << "Quack ID: " << result.tid;
-        oss << ", Author: " << ((pond.getUsername(result.writer_id) != "") ? pond.getUsername(result.writer_id) : "Unknown");
-        oss << std::string(69 - oss.str().length(), ' ');
-        oss << "Date and Time: " << (result.date.empty() ? "Unknown" : result.date);
-        oss << " " << (result.time.empty() ? "Unknown" : result.time) << "\n\n";
-        oss << "Text: " << formatTweetText(result.text, 94) << "\n";
-
-        oss << "\n";
-        for(int i = 0; i < 100; ++i) oss << '-'; 
-        oss << '\n';
-        std::cout << oss.str();
-
-        ++i;
-      }
-
-    std::cout << error <<
-      "\n\n1. See More Of The Users Quacks"
-      "\n2. See Less Of The Users Quacks"
-      "\n3. Follow The User"
-      "\n4. Return"
-      "\n\nSelection: ";
-    std::cin >> select;
-    if (std::cin.peek() != '\n') select = '0';
-    // Consume any trailing '\n' and discard it
-    { std::string dummy; std::getline(std::cin, dummy); }
-    switch (select) {
-      case '1':
-        error = "";
-        hardstop += 3;
-        if (static_cast<long unsigned int>(hardstop) > users_quacks.size() + 3){
-          error = "\nThis User Has No More Quacks To Diplay!";
-          hardstop -= 3;
-          break;
-        }
-        break;
-      case '2':
-        error = "";
-        if (hardstop == 0){
-          error = "You Are Already Not Seeing Any Quacks!";
-          break;
-        }
-        hardstop -= 3;
-        break;
-      case '3': 
-        {
-          error = "";
-          bool already_follows = false;
-          for (int32_t flws : pond.getFollows(user_id)) {
-            if (flws == user.usr || user_id == user.usr) { 
-              if (flws == user.usr) std::cout << "You already follow " << user.name << "\n";
-              if (user_id == user.usr) std::cout << "You can't follow yourself " << user.name << "\n";
-              std::cout << "Press Enter to return... ";
-              std::string input;
-              std::getline(std::cin, input);
-              while (!input.empty()) {
-                std::cout << "\033[A\033[2K" << std::flush;
-                std::cout << "Input Is Invalid: Press Enter to return... ";
-                std::getline(std::cin, input);
-              }
-              already_follows = true;
-              break;
-            }
-          }
-          if (!already_follows) {
-            pond.follow(user_id, user.usr);
-            std::cout << "You are now following " << user.name << "\n";
-            std::cout << "Press Enter to return... ";
-            std::string input;
-            std::getline(std::cin, input);
-            while (!input.empty()) {
-              std::cout << "\033[A\033[2K" << std::flush;
-              std::cout << "Input Is Invalid: Press Enter to return... ";
-              std::getline(std::cin, input);
-            }
-          }
-        }
-        break;
-      case '4':
-        error = "";
-        return;
-      default:
-        error = "\nInvalid Input Entered [use: 1, 2, 3].\n";
-        break;
-    }
-  }
-}
 /**
- * @brief Displays the quack search page and prompts the user to enter a search term.
+ * @brief Provides a user interface for searching and interacting with Quacks.
  *
- * The search term should be a keyword or a hashtag prefixed with '#'. The search results
- * are displayed to the user 5 at a time, showing matching users.
+ * This method allows users to search for Quacks using keywords or hashtags and 
+ * displays the results. Users can navigate through results, reply to or requack 
+ * posts, or return to the main menu.
+ *
+ * @details
+ * - Retrieves and displays search results based on the entered search term.
+ * - Supports pagination for viewing more or fewer Quacks in the results.
+ * - Allows users to interact with Quacks by replying or requacking.
+ * - Validates user input for result navigation and Quack interaction to ensure proper behavior.
  */
 void Quacker::searchQuacksPage() {
   std::string description = "Search for a keyword or hashtag, or press Enter to return... ";
@@ -879,6 +810,145 @@ void Quacker::searchQuacksPage() {
   }
 }
 
+/**
+ * @brief Displays a detailed user profile and allows interactions with the user's content.
+ *
+ * This method provides an interface to view a user's profile, including their information, 
+ * quacks, and follower statistics. Users can navigate through the profile, view more or fewer 
+ * quacks, follow the user, or return to the previous menu.
+ *
+ * @details
+ * - Displays the selected user's profile details, including name, follower count, and quack count.
+ * - Fetches and displays the user's quacks, with pagination to show more or fewer quacks.
+ * - Provides an option to follow the user, with validation to prevent self-following or duplicate follows.
+ * - Handles user input to navigate or interact with the profile and validates it for accuracy.
+ */
+ void Quacker::userPage(const Pond::User& user) {
+  int32_t user_id = *(this->_user_id);
+  std::string error = "";
+  int32_t hardstop = 3;
+  while (true) {
+    int32_t i = 1;
+    std::system("clear");
+    char select;
+    std::cout << QUACKER_BANNER;
+    std::cout << "\nActions For User:\n\n";
+    std::ostringstream oss;
+    oss << "----------------------------------------------------------------------------------------------------\n";
+    oss << "  User ID: " << std::setw(40) << std::left << user.usr
+        << "Name: " << user.name << "\n";
+    oss << "  Followers: " << std::setw(38) << std::left << pond.getFollowers(user.usr).size()
+        << "Follows: " << pond.getFollows(user.usr).size() << "\n  Quack Count: " << pond.getQuacks(user.usr).size() << "\n\n";
+    std::cout << oss.str();
+    std::cout << "------------------------------------------- User's Quacks ------------------------------------------\n\n";
+    
+    std::vector<Pond::Quack> users_quacks = pond.getQuacks(user.usr);
+
+    for (const Pond::Quack& result : users_quacks) {
+        if(i > hardstop) break;
+        std::ostringstream oss;
+        
+        oss << i << ".\n";
+        oss << "Quack ID: " << result.tid;
+        oss << ", Author: " << ((pond.getUsername(result.writer_id) != "") ? pond.getUsername(result.writer_id) : "Unknown");
+        oss << std::string(69 - oss.str().length(), ' ');
+        oss << "Date and Time: " << (result.date.empty() ? "Unknown" : result.date);
+        oss << " " << (result.time.empty() ? "Unknown" : result.time) << "\n\n";
+        oss << "Text: " << formatTweetText(result.text, 94) << "\n";
+
+        oss << "\n";
+        for(int i = 0; i < 100; ++i) oss << '-'; 
+        oss << '\n';
+        std::cout << oss.str();
+
+        ++i;
+      }
+
+    std::cout << error <<
+      "\n\n1. See More Of The Users Quacks"
+      "\n2. See Less Of The Users Quacks"
+      "\n3. Follow The User"
+      "\n4. Return"
+      "\n\nSelection: ";
+    std::cin >> select;
+    if (std::cin.peek() != '\n') select = '0';
+    // Consume any trailing '\n' and discard it
+    { std::string dummy; std::getline(std::cin, dummy); }
+    switch (select) {
+      case '1':
+        error = "";
+        hardstop += 3;
+        if (static_cast<long unsigned int>(hardstop) > users_quacks.size() + 3){
+          error = "\nThis User Has No More Quacks To Diplay!";
+          hardstop -= 3;
+          break;
+        }
+        break;
+      case '2':
+        error = "";
+        if (hardstop == 0){
+          error = "You Are Already Not Seeing Any Quacks!";
+          break;
+        }
+        hardstop -= 3;
+        break;
+      case '3': 
+        {
+          error = "";
+          bool already_follows = false;
+          for (int32_t flws : pond.getFollows(user_id)) {
+            if (flws == user.usr || user_id == user.usr) { 
+              if (flws == user.usr) std::cout << "You already follow " << user.name << "\n";
+              if (user_id == user.usr) std::cout << "You can't follow yourself " << user.name << "\n";
+              std::cout << "Press Enter to return... ";
+              std::string input;
+              std::getline(std::cin, input);
+              while (!input.empty()) {
+                std::cout << "\033[A\033[2K" << std::flush;
+                std::cout << "Input Is Invalid: Press Enter to return... ";
+                std::getline(std::cin, input);
+              }
+              already_follows = true;
+              break;
+            }
+          }
+          if (!already_follows) {
+            pond.follow(user_id, user.usr);
+            std::cout << "You are now following " << user.name << "\n";
+            std::cout << "Press Enter to return... ";
+            std::string input;
+            std::getline(std::cin, input);
+            while (!input.empty()) {
+              std::cout << "\033[A\033[2K" << std::flush;
+              std::cout << "Input Is Invalid: Press Enter to return... ";
+              std::getline(std::cin, input);
+            }
+          }
+        }
+        break;
+      case '4':
+        error = "";
+        return;
+      default:
+        error = "\nInvalid Input Entered [use: 1, 2, 3].\n";
+        break;
+    }
+  }
+}
+
+/**
+ * @brief Provides an interface for replying to a specific Quack.
+ *
+ * This method allows a user to write and post a reply to a given Quack. The 
+ * details of the Quack being replied to are displayed, and the user can submit 
+ * their reply or cancel the action.
+ *
+ * @details
+ * - Displays the original Quack details, including text, author, and timestamps.
+ * - Allows users to compose a reply, which is then added to the database.
+ * - Handles errors during reply submission and provides appropriate feedback.
+ * - Users can exit the reply interface by pressing Enter without entering text.
+ */
 void Quacker::replyPage(const int32_t& user_id, const Pond::Quack& reply) {
   std::string error = "";
   while (true) {
@@ -922,6 +992,19 @@ void Quacker::replyPage(const int32_t& user_id, const Pond::Quack& reply) {
   }
 }
 
+/**
+ * @brief Provides an interface for interacting with a specific Quack.
+ *
+ * This method allows a user to view details about a Quack and take actions such as 
+ * replying, requacking, or returning to the previous menu.
+ *
+ * @details
+ * - Displays detailed information about the Quack, including its author, content, and metadata.
+ * - Users can reply to the Quack, which redirects to the reply interface.
+ * - Users can requack the post, with validation to prevent duplicate requacks.
+ * - Handles errors during requacking and provides feedback.
+ * - Allows users to exit the interface by selecting the return option.
+ */
 void Quacker::quackPage(const int32_t& user_id, const Pond::Quack& reply) {
   std::string error = "";
   while (true) {
@@ -990,66 +1073,21 @@ void Quacker::quackPage(const int32_t& user_id, const Pond::Quack& reply) {
     }
   }
 }
+/**
+ * @brief Displays the list of followers and allows interaction with the follower profiles.
+ *
+ * This method shows the user's followers and provides options to navigate through the list
+ * or view detailed profiles of individual followers.
+ *
+ * @details
+ * - Retrieves and displays a list of followers associated with the logged-in user.
+ * - Supports pagination for viewing more or fewer followers at a time.
+ * - Allows users to select a follower from the list to view their profile.
+ * - Validates user input for navigation and profile selection.
+ * - Handles cases where there are no followers gracefully by displaying an appropriate message.
+ */
 
 void Quacker::followersPage() {
-  // std::string error = "";
-  // while (true) {
-  //   std::system("clear");
-  //   std::vector<Pond::User> results = pond.getFollowers(*(this->_user_id));
-  //   std::cout << QUACKER_BANNER;
-  //   std::cout << "\nYour Followers:\n\n";
-  //   uint32_t i = 1;
-  //   for (const Pond::User& flwer : results) {
-  //     std::ostringstream oss;
-  //     oss << "----------------------------------------------------------------------------------------------------\n";
-  //     oss << i << ".   User ID: " << std::setw(40) << std::left << flwer.usr
-  //       << "Name: " << flwer.name << "\n";
-  //     std::cout << oss.str();
-  //     ++i;
-  //   }
-  //   std::cout << "----------------------------------------------------------------------------------------------------\n\n";
-
-  //   std::cout << "Select a user (1,2,3,...) OR press Enter to return: ";
-  //   std::string input;
-  //   std::getline(std::cin, input);
-
-  //   if (input.empty()) {
-  //     return;
-  //   }
-
-  //   bool valid_input = false;
-  //   while (!valid_input) {
-  //     std::regex positive_integer_regex("^[1-9]\\d*$");
-  //     if (!std::regex_match(input, positive_integer_regex)) {
-  //       std::cout << "\033[A\033[2K" << std::flush;
-  //       std::cout << "Input Is Invalid: Select a user (1,2,3,...) OR press Enter to return: ";
-  //       std::getline(std::cin, input);
-
-  //       if (input.empty()) {
-  //         return; 
-  //       }
-  //       continue;
-  //     }
-
-  //     uint32_t selection = std::stoi(input) - 1;
-  //     if (selection > i - 2) {
-  //       std::cout << "\033[A\033[2K" << std::flush;
-  //       std::cout << "Input Is Invalid: Select a user (1,2,3,...) OR press Enter to return: ";
-  //       std::getline(std::cin, input);
-
-  //       if (input.empty()) {
-  //         return; 
-  //       }
-  //       continue;
-  //     }
-  //     valid_input = true;
-
-  //     if (selection < results.size()) {
-  //       this->userPage(results[selection]);
-  //     }
-  //     break;
-  //   }
-  // }
   std::string description = "View your followers or press Enter to return.";
   
   // show search interface
@@ -1229,7 +1267,6 @@ void Quacker::followersPage() {
       }
     }
   }
-
 }
 
 
@@ -1282,6 +1319,41 @@ std::string Quacker::processFeed(const std::int32_t& user_id, int32_t& FeedDispl
     }
 
     return oss.str();
+}
+
+std::string Quacker::getHiddenPassword() {
+  struct termios oldt, newt;
+  std::string password;
+  char ch;
+
+  // save old terminal settings and disable echo
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ECHO); // disable echo
+  newt.c_lflag &= ~(ICANON); // disable canonical mode 
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+  while (true) {
+    ch = getchar();
+    if (ch == '\n') { 
+      std::cout << std::endl;
+      break;
+    }
+    else if (ch == 127 || ch == '\b') { // backspace
+      if (!password.empty()) {
+        password.pop_back();
+        std::cout << "\b \b"; 
+      }
+    }
+    else {
+      password.push_back(ch);
+      std::cout << '*'; 
+    }
+  }
+
+  // restore old terminal settings
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  return password;
 }
 
 /**
