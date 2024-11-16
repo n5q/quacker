@@ -11,10 +11,17 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 
-\lstset{ language=Python, basicstyle=\ttfamily\small, keywordstyle=\color{blue},
-commentstyle=\color{gray}, stringstyle=\color{red}, showstringspaces=false,
-identifierstyle=\color{black}, breaklines=true, columns=fullflexible,
-backgroundcolor=\color{white}, % you can change the background color
+\lstset{
+	language=Python,
+	basicstyle=\ttfamily\small,
+	keywordstyle=\color{blue},
+	commentstyle=\color{gray},
+	stringstyle=\color{red},
+	showstringspaces=false,
+	identifierstyle=\color{black},
+	breaklines=true,
+	columns=fullflexible,
+	backgroundcolor=\color{white}, % you can change the background color
 }
 
 \begin{document}
@@ -198,11 +205,19 @@ def populate_db(db_name, user_count=100, tweet_count=500, list_count=200, follow
 \end{lstlisting}
 When it came to testing the application, this was done manually due to the page centric format of our user interface. 
 The felxibilty of testing manually allowed our team to catch unique edge cases that may have passed over an automated
-system.
+system. \\We tested all the possible ways a user could interact with the program, making sure the program could handle erroneous inputs
 % \newpage
 
 
 % d)
 \section{Group Work Breakdown}
-We give all credit to Allah SWT, all success comes from Him alone.
+We divided tasks based on strengths and collaboration needs. Below is a summary:
+
+\begin{itemize}
+    \item \textbf{Nasif Qadri:} Responsible for backend development, including database design and implementation of the \textit{Pond} class.
+    \item \textbf{Yousef Moussa:} Focused on frontend development and the user interface within the \textit{Quacker} class.
+    \item \textbf{Omar Mahmoud:} Managed testing strategies, the data population script, debugging edge cases, and documenting/commenting code.
+\end{itemize}
+
+\noindent However, all of us ended up helping each other out with different parts of the project, so these these roles were not strictly defined 
 \end{document}
