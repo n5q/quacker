@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+\documentclass[11pt]{article}
 
 \usepackage{courier}
 \usepackage{enumerate} 
@@ -32,7 +32,7 @@ Design Document - CMPUT 291 Mini Project 1\\}
 \date{2024-11-14}
 
 \maketitle
-\newpage
+% \newpage
 % \begin{abstract}
 % 	abstarct
 % \end{abstract}
@@ -41,6 +41,91 @@ Design Document - CMPUT 291 Mini Project 1\\}
 
 % a)
 \section{Overview and User Guide}
+
+\subsection{System Overview}
+Quacker is a lightweight social media platform that enables users to share short posts (\textit{Quacks}), follow other users, and interact with users. 
+
+\subsection{Features}
+The core features of Quacker include:
+\begin{itemize}
+    \item \textbf{User Authentication:} Users can log in or sign up for an account.
+    \item \textbf{Posting Quacks:} Users can create new Quacks or reply to existing ones.
+    \item \textbf{Feed Management:} Users can view a personalized feed containing Quacks from people they follow.
+    \item \textbf{Search Functionality:} Users can search for other users or specific Quacks by keywords or hashtags.
+    \item \textbf{Follow System:} Users can follow others to curate their feed.
+\end{itemize}
+
+\subsection{User Guide}
+This section provides a step-by-step guide to using Quacker.
+
+\subsection*{Getting Started}
+\begin{enumerate}
+    \item Launch the Quacker application.
+    \item On the welcome page, choose from the following options:
+        \begin{itemize}
+            \item Press \textbf{1} to log in to your account.
+            \item Press \textbf{2} to sign up for a new account.
+            \item Press \textbf{3} to exit the application.
+        \end{itemize}
+\end{enumerate}
+
+\subsection*{Creating an Account}
+\begin{enumerate}
+    \item Select \textbf{2} (Sign Up) on the start page.
+    \item Enter your details:
+        \begin{itemize}
+            \item \textbf{Name:} Your full name.
+            \item \textbf{Email:} A valid email address.
+            \item \textbf{Phone Number:} A 10-digit phone number.
+            \item \textbf{Password:} A secure password.
+        \end{itemize}
+    \item If successful, you will logged in.
+\end{enumerate}
+
+\subsection*{Logging In}
+\begin{enumerate}
+    \item Select \textbf{1} (Log In) on the start page.
+    \item Enter your \textbf{User ID} and \textbf{Password}.
+\end{enumerate}
+
+\subsection*{Using the Feed}
+\begin{enumerate}
+    \item View the latest Quacks from people you follow.
+    \item Navigate using these options:
+        \begin{itemize}
+            \item Press \textbf{1} to see more Quacks.
+            \item Press \textbf{2} to see fewer Quacks.
+            \item Press \textbf{3} to search for users.
+            \item Press \textbf{4} to search for Quacks.
+            \item Press \textbf{5} to reply or repost a Quack from your feed.
+            \item Press \textbf{6} to list your followers
+            \item Press \textbf{7} to create a new Quack.
+            \item Press \textbf{8} to log out.
+        \end{itemize}
+\end{enumerate}
+
+\subsection*{Creating a Quack}
+\begin{enumerate}
+    \item Navigate to the posting page by selecting \textbf{7} from the feed menu.
+    \item Enter the text of your Quack.
+    \item Press \textbf{Enter} to post the Quack.
+\end{enumerate}
+
+\subsection*{Searching for Users or Quacks}
+\begin{enumerate}
+    \item Select \textbf{3} (Search for Users) or \textbf{4} (Search for Quacks) from the feed menu.
+    \item Enter a search term (e.g., a name or hashtag).
+    \item View the results and interact with users or Quacks as desired (follow, reply, etc...).
+\end{enumerate}
+
+\subsection*{Logging Out}
+\begin{enumerate}
+    \item Select \textbf{8} from the feed menu to log out of your account.
+    \item You will be redirected to the start page.
+\end{enumerate}
+
+
+
   \subsection*{Running the Application}
 	\begin{enumerate}
 		\item \textbf{Compile the Application:} \\
@@ -53,14 +138,14 @@ Design Document - CMPUT 291 Mini Project 1\\}
 		\begin{verbatim}
 		build/quacker <database_filename>
 		\end{verbatim}
-		\textit{Example:}
-		\begin{verbatim}
-		build/quacker test/test.db
-		\end{verbatim}
-		\item \textbf{Interacting with the Application:} \\
-		Upon launch, the application displays the main start page, providing options for interacting with Quacker .
+		% \textit{Example:}
+		% \begin{verbatim}
+		% build/quacker test/test.db
+		% \end{verbatim}
+		% \item \textbf{Interacting with the Application:} \\
+		% Upon launch, the application displays the main start page, providing options for interacting with Quacker .
 	\end{enumerate}
-\newpage
+% \newpage
 
 % b)
 \section{Software Design}
@@ -92,7 +177,7 @@ The application consists of the following key components:
 		\item Results from the \textit{Pond} class are used to render user-friendly views in the \textit{Quacker} class.
 	\end{enumerate}
 
-\newpage
+% \newpage
 
 % c)
 \section{Testing Strategy}
@@ -121,7 +206,7 @@ def populate_db(db_name, user_count=100, tweet_count=500, list_count=200, follow
 When it came to testing the application, this was done manually due to the page centric format of our user interface. 
 The felxibilty of testing manually allowed our team to catch unique edge cases that may have passed over an automated
 system.
-\newpage
+% \newpage
 
 
 % d)
