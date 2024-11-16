@@ -52,5 +52,5 @@ We collaborated exclusively within our group. No external collaboration was invo
 
 ---
 
-# More detail of any AI tool used.
+### More detail of any AI tool used.
 Used for formating our Doxygen comments consistently.
