@@ -7,6 +7,8 @@ Group member names and ccids (3-4 members)
   ymoussa, Yousef Moussa  
   nqadri, nasif qadri
 
+Quacker is a CLI based dummy social media platform that enables users to share posts, follow others, and interact with content, featuring a robust user interface and backend built with C++ and SQLite3. 
+The project employs modular architecture, secure database interactions, and user-friendly features like personalized feeds, hashtags, and search functionality.
 
 ### **Group Work Break-Down Strategy**
 We divided tasks based on strengths and collaboration needs:
