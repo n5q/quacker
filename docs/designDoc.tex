@@ -93,12 +93,13 @@ The application consists of the following key components:
 	% \end{itemize}
 
 	\subsection*{Component Interactions}
+	The application follows a structured flow of data between the \texttt{Quacker} and \texttt{Pond} classes:
 	\begin{enumerate}
-		\item The \texttt{Quacker} class calls the relevant \texttt{Pond} methods for database interactions.
+		\item The user interfaces with the \texttt{Quacker} class, which calls the relevant \texttt{Pond} methods for database interactions.
 		\item The \texttt{Pond} class processes SQL queries to retrieve, insert, or update data in the database.
 		\item Results from the \texttt{Pond} class are used to render user-friendly views in the \texttt{Quacker} class.
 	\end{enumerate}
-	
+
 \newpage
 
 % c)
